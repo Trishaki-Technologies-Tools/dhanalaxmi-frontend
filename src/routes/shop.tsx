@@ -1,0 +1,210 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { LayoutGrid, List, SlidersHorizontal } from "lucide-react";
+import { categories, products, formatINR } from "@/lib/catalog";
+import { ProductCard } from "@/components/site/product-card";
+import { Reveal } from "@/components/site/reveal";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/shop")({
+  head: () => ({
+    meta: [
+      { title: "Shop 925 Silver Jewelry — Dhanalaxmi Jeweler's" },
+      {
+        name: "description",
+        content:
+          "Shop hallmarked 925 sterling silver jewelry with filters for price, weight, category, occasion and collection.",
+      },
+      { property: "og:title", content: "Shop 925 Silver Jewelry — Dhanalaxmi Jeweler's" },
+      {
+        property: "og:description",
+        content: "Filter by price, weight, occasion and collection across our silver catalogue.",
+      },
+    ],
+  }),
+  component: ShopPage,
+});
+
+const occasions = ["Everyday", "Festive", "Wedding", "Temple", "Gifting"];
+const sorts = ["Popularity", "Price: Low to High", "Price: High to Low", "Weight"] as const;
+
+function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="border-t border-border py-7">
+      <p className="text-eyebrow">{title}</p>
+      <div className="mt-5 space-y-3">{children}</div>
+    </div>
+  );
+}
+
+function ShopPage() {
+  const [maxPrice, setMaxPrice] = useState(20000);
+  const [cats, setCats] = useState<string[]>([]);
+  const [occ, setOcc] = useState<string[]>([]);
+  const [sort, setSort] = useState<(typeof sorts)[number]>("Popularity");
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const toggle = (list: string[], value: string, set: (v: string[]) => void) =>
+    set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+
+  const visible = useMemo(() => {
+    const filtered = products.filter(
+      (p) =>
+        p.price <= maxPrice &&
+        (cats.length === 0 || cats.includes(p.category)) &&
+        (occ.length === 0 || occ.includes(p.occasion)),
+    );
+    const sorted = [...filtered];
+    if (sort === "Price: Low to High") sorted.sort((a, b) => a.price - b.price);
+    if (sort === "Price: High to Low") sorted.sort((a, b) => b.price - a.price);
+    if (sort === "Weight") sorted.sort((a, b) => b.weight - a.weight);
+    if (sort === "Popularity") sorted.sort((a, b) => b.popularity - a.popularity);
+    return sorted;
+  }, [maxPrice, cats, occ, sort]);
+
+  return (
+    <div className="mx-auto max-w-[88rem] px-6 py-20 lg:px-10">
+      <Reveal>
+        <p className="text-eyebrow">Shop</p>
+        <h1 className="mt-4 text-5xl leading-tight sm:text-6xl">The Silver Catalogue</h1>
+        <p className="mt-4 max-w-xl text-sm text-muted-foreground">
+          {visible.length} hallmarked pieces · transparent weights · lifetime polish included
+        </p>
+      </Reveal>
+
+      <div className="mt-14 grid gap-12 lg:grid-cols-[17rem_1fr]">
+        <aside
+          className={cn(
+            "lg:block",
+            showFilters ? "block" : "hidden",
+          )}
+        >
+          <FilterGroup title={`Price · up to ${formatINR(maxPrice)}`}>
+            <input
+              type="range"
+              min={2000}
+              max={20000}
+              step={500}
+              value={maxPrice}
+              aria-label="Maximum price"
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="w-full accent-foreground"
+            />
+          </FilterGroup>
+
+          <FilterGroup title="Category">
+            {categories.slice(0, 7).map((c) => (
+              <label key={c.slug} className="flex cursor-pointer items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={cats.includes(c.slug)}
+                  onChange={() => toggle(cats, c.slug, setCats)}
+                  className="size-4 accent-foreground"
+                />
+                <span className="text-muted-foreground">{c.name}</span>
+              </label>
+            ))}
+          </FilterGroup>
+
+          <FilterGroup title="Occasion">
+            {occasions.map((o) => (
+              <label key={o} className="flex cursor-pointer items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={occ.includes(o)}
+                  onChange={() => toggle(occ, o, setOcc)}
+                  className="size-4 accent-foreground"
+                />
+                <span className="text-muted-foreground">{o}</span>
+              </label>
+            ))}
+          </FilterGroup>
+
+          <FilterGroup title="Metal">
+            <p className="text-sm text-muted-foreground">925 Sterling Silver</p>
+            <p className="text-sm text-muted-foreground">Rhodium Sealed</p>
+          </FilterGroup>
+        </aside>
+
+        <div>
+          <div className="flex flex-wrap items-center gap-4 border-b border-border pb-6">
+            <button
+              onClick={() => setShowFilters((v) => !v)}
+              className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] lg:hidden"
+            >
+              <SlidersHorizontal className="size-4" /> Filters
+            </button>
+            <select
+              value={sort}
+              aria-label="Sort products"
+              onChange={(e) => setSort(e.target.value as (typeof sorts)[number])}
+              className="rounded-full border border-border bg-background px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] outline-none"
+            >
+              {sorts.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <div className="ml-auto flex items-center gap-2">
+              {(["grid", "list"] as const).map((v) => (
+                <button
+                  key={v}
+                  aria-label={`${v} view`}
+                  onClick={() => setView(v)}
+                  className={cn(
+                    "flex size-10 items-center justify-center rounded-full border border-border transition-colors",
+                    view === v ? "bg-primary text-primary-foreground" : "hover:bg-secondary",
+                  )}
+                >
+                  {v === "grid" ? (
+                    <LayoutGrid className="size-4" />
+                  ) : (
+                    <List className="size-4" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {visible.length === 0 ? (
+            <div className="luxe-card mt-12 p-16 text-center">
+              <p className="font-display text-2xl">Nothing matches those filters</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Try widening the price range or clearing a category.
+              </p>
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "mt-10 grid gap-6",
+                view === "grid" ? "sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 max-w-2xl",
+              )}
+            >
+              {visible.map((p, i) => (
+                <Reveal key={p.slug} delay={(i % 3) * 0.05}>
+                  <ProductCard product={p} />
+                </Reveal>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-16 flex items-center justify-center gap-2">
+            {[1, 2, 3].map((n) => (
+              <button
+                key={n}
+                className={cn(
+                  "size-10 rounded-full border border-border text-sm transition-colors",
+                  n === 1 ? "bg-primary text-primary-foreground" : "hover:bg-secondary",
+                )}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
