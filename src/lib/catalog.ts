@@ -39,7 +39,7 @@ export type Product = {
   metal: string;
   occasion: string;
   collection: string;
-  badge?: string;
+  badge?: string | undefined;
   rating: number;
   reviews: number;
   stock: number;
