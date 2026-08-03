@@ -27,8 +27,6 @@ const pillars = [
   ["Promise", "Transparent weights, hallmarked purity, lifetime polish and repair."],
 ];
 
-export default function noop() {}
-
 function AboutPage() {
   return (
     <div>
