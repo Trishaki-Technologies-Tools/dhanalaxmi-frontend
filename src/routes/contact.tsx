@@ -79,7 +79,7 @@ function ContactPage() {
                 className="mt-3 w-full rounded-[1.25rem] border border-border bg-secondary p-5 text-sm outline-none transition-colors focus:border-foreground"
               />
             </div>
-            <button className="h-13 w-full rounded-full bg-primary py-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-silver hover:text-primary">
+            <button className="w-full rounded-full bg-primary py-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-silver hover:text-primary">
               Send enquiry
             </button>
           </form>
