@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef } from "react";
 import {
   ArrowRight,
@@ -13,7 +13,7 @@ import {
   Truck,
   Quote,
 } from "lucide-react";
-import heroModel from "@/assets/hero-model.jpg";
+import heroCinematic from "@/assets/hero-cinematic.jpg";
 import editorialPortrait from "@/assets/editorial-portrait.jpg";
 import editorialHands from "@/assets/editorial-hands.jpg";
 import craftImage from "@/assets/craft.jpg";
