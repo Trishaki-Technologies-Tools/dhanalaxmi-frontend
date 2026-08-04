@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef } from "react";
 import {
   ArrowRight,
@@ -13,7 +13,7 @@ import {
   Truck,
   Quote,
 } from "lucide-react";
-import heroModel from "@/assets/hero-model.jpg";
+import heroCinematic from "@/assets/hero-cinematic.jpg";
 import editorialPortrait from "@/assets/editorial-portrait.jpg";
 import editorialHands from "@/assets/editorial-hands.jpg";
 import craftImage from "@/assets/craft.jpg";
@@ -42,127 +42,179 @@ export const Route = createFileRoute("/")({
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-const floatingCards = [
-  { title: "925 Hallmarked", copy: "BIS certified purity", Icon: BadgeCheck },
-  { title: "Free Shipping", copy: "Insured, pan-India", Icon: Truck },
-  { title: "Trusted Since 1978", copy: "Three generations", Icon: Gem },
+const heroProofs = [
+  { title: "925 Hallmarked", copy: "BIS assayed purity", Icon: BadgeCheck },
+  { title: "Insured Shipping", copy: "Free, pan-India", Icon: Truck },
+  { title: "Since 1978", copy: "Three generations", Icon: Gem },
 ];
 
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const imgY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
-  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
+  const imgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
+  const wordY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
+  const glow = useTransform(scrollYProgress, [0, 1], [0.85, 0.2]);
+
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const tiltX = useSpring(useTransform(my, [-0.5, 0.5], [8, -8]), { stiffness: 120, damping: 18 });
+  const tiltY = useSpring(useTransform(mx, [-0.5, 0.5], [-10, 10]), { stiffness: 120, damping: 18 });
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-warm-white">
-      <div className="silver-halo pointer-events-none absolute -left-32 top-10 size-[38rem] opacity-70" />
-      <div className="silver-halo animate-float-slow pointer-events-none absolute -right-24 bottom-0 size-[30rem] opacity-60" />
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-linear-to-r from-transparent via-silver to-transparent opacity-60" />
+    <section
+      ref={ref}
+      onPointerMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        mx.set((e.clientX - r.left) / r.width - 0.5);
+        my.set((e.clientY - r.top) / r.height - 0.5);
+      }}
+      className="relative isolate overflow-hidden bg-ink text-primary-foreground"
+    >
+      {/* hairline grid */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.14]">
+        {[18, 38, 62, 82].map((l) => (
+          <span key={l} className="absolute inset-y-0 w-px bg-silver" style={{ left: `${l}%` }} />
+        ))}
+      </div>
+      <motion.div
+        style={{ opacity: glow }}
+        className="pointer-events-none absolute left-1/2 top-[-18%] size-[46rem] -translate-x-1/2 rounded-full bg-silver/20 blur-[120px]"
+      />
 
-      <div className="relative mx-auto grid max-w-[88rem] items-center gap-10 px-6 pb-14 pt-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:px-10 lg:pb-24 lg:pt-20">
-        <motion.div style={{ y: textY }}>
-          <motion.p
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease }}
-            className="text-eyebrow"
-          >
-            Est. 1978 · Sterling Silver Atelier
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.08, ease }}
-            className="mt-6 text-[3rem] leading-[0.94] sm:text-[4.25rem] lg:text-[5.75rem]"
-          >
-            Crafted In Silver.
-            <span className="block italic text-silver-deep">Designed For Forever.</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease }}
-            className="mt-7 max-w-md text-[15px] leading-relaxed text-muted-foreground"
-          >
-            Hallmarked 925 heirlooms, hand-finished across fourteen stages by three generations of
-            South Indian silversmiths — made to be worn, gifted and inherited.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3, ease }}
-            className="mt-10 flex flex-wrap items-center gap-4"
-          >
-            <Link
-              to="/shop"
-              className="btn-luxe shine-sweep group flex h-14 items-center gap-3 rounded-full bg-primary px-9 text-primary-foreground shadow-luxe transition-colors hover:bg-silver hover:text-primary"
-            >
-              Shop the collection
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-            <Link
-              to="/collections"
-              className="btn-luxe flex h-14 items-center rounded-full border border-foreground/20 px-9 transition-colors hover:border-foreground hover:bg-mist"
-            >
-              Editorial lookbook
-            </Link>
-          </motion.div>
-
-          <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border pt-7">
-            {[
-              ["47", "Years of craft"],
-              ["92.5", "Purity, always"],
-              ["1.2L+", "Happy patrons"],
-            ].map(([value, label]) => (
-              <div key={label}>
-                <p className="font-price text-3xl sm:text-4xl">{value}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                  {label}
-                </p>
-              </div>
-            ))}
-          </div>
+      <div className="relative mx-auto max-w-[92rem] px-6 pb-0 pt-12 lg:px-10 lg:pt-16">
+        {/* top rail */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, ease }}
+          className="flex items-center justify-between border-b border-primary-foreground/15 pb-5 text-[10px] uppercase tracking-[0.32em] text-primary-foreground/60"
+        >
+          <span>Est. 1978 · Sterling Atelier</span>
+          <span className="hidden sm:block">Vol. XI — The Silver Edit</span>
+          <span className="flex items-center gap-2">
+            <Sparkles className="size-3 text-silver" /> 92.5 Pure
+          </span>
         </motion.div>
 
-        <div className="relative">
-          <div className="absolute -inset-6 rounded-[2.5rem] bg-silver-tint/70 blur-[2px]" />
-          <div className="absolute -right-4 -top-6 hidden size-40 rounded-full border border-silver/70 lg:block" />
+        {/* stacked editorial title over portrait */}
+        <div className="relative pt-10 lg:pt-14">
+          <motion.h1
+            style={{ y: wordY }}
+            className="pointer-events-none relative z-20 text-center font-display leading-[0.82] tracking-[-0.02em]"
+          >
+            {["Crafted", "In Silver"].map((w, i) => (
+              <motion.span
+                key={w}
+                initial={{ opacity: 0, y: 40, filter: "blur(14px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 1.2, delay: 0.1 + i * 0.12, ease }}
+                className={`block text-[19vw] lg:text-[13.5vw] ${
+                  i === 1 ? "italic text-silver" : ""
+                }`}
+              >
+                {w}
+              </motion.span>
+            ))}
+          </motion.h1>
+
           <motion.div
-            initial={{ opacity: 0, scale: 1.06 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.4, ease }}
-            className="relative overflow-hidden rounded-[2rem] shadow-luxe-lg"
+            initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
+            animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
+            transition={{ duration: 1.6, delay: 0.35, ease }}
+            style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1200 }}
+            className="relative z-10 mx-auto -mt-[9vw] w-[72%] overflow-hidden rounded-t-[999px] sm:w-[52%] lg:-mt-[7vw] lg:w-[34%]"
           >
             <motion.img
               style={{ y: imgY }}
-              src={heroModel}
-              alt="Model wearing hallmarked 925 sterling silver earrings and layered necklace"
-              width={960}
-              height={1280}
-              className="aspect-4/5 w-full scale-110 object-cover object-top"
+              src={heroCinematic}
+              alt="Model wearing layered hallmarked 925 sterling silver necklaces and sculptural earrings"
+              width={1024}
+              height={1408}
+              className="aspect-3/4 w-full scale-110 object-cover object-top"
             />
-            <div className="absolute inset-0 bg-linear-to-t from-ink/25 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/10 to-transparent" />
           </motion.div>
 
-          <div className="mt-4 grid grid-cols-3 gap-3 lg:absolute lg:-left-10 lg:bottom-10 lg:mt-0 lg:block lg:space-y-4">
-            {floatingCards.map(({ title, copy, Icon }, i) => (
-              <motion.div
-                key={title}
-                initial={{ opacity: 0, x: -18 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.9, delay: 0.5 + i * 0.15, ease }}
-                className="glass-card animate-float-slow flex items-center gap-3 px-3 py-3 lg:max-w-[15rem] lg:px-5 lg:py-4"
-                style={{ animationDelay: `${i * 1.6}s` }}
+          {/* side copy */}
+          <div className="relative z-20 -mt-[12vw] grid gap-10 pb-14 lg:-mt-[9vw] lg:grid-cols-3 lg:items-end lg:gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.7, ease }}
+              className="max-w-xs"
+            >
+              <p className="font-display text-3xl italic leading-tight text-silver">
+                Designed for forever.
+              </p>
+              <p className="mt-4 text-[13px] leading-relaxed text-primary-foreground/65">
+                Hallmarked 925 heirlooms, hand-finished across fourteen stages by three generations
+                of South Indian silversmiths.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.8, ease }}
+              className="flex flex-wrap items-center justify-center gap-4"
+            >
+              <Link
+                to="/shop"
+                className="btn-luxe shine-sweep group flex h-14 items-center gap-3 rounded-full bg-background px-9 text-foreground transition-transform hover:-translate-y-0.5"
               >
-                <Icon className="size-4 shrink-0 text-silver-deep" />
-                <div>
-                  <p className="text-[11px] font-semibold leading-tight">{title}</p>
-                  <p className="mt-0.5 hidden text-[11px] text-muted-foreground sm:block">{copy}</p>
+                Shop the collection
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link
+                to="/collections"
+                className="btn-luxe flex h-14 items-center rounded-full border border-primary-foreground/30 px-8 transition-colors hover:border-silver hover:text-silver"
+              >
+                Lookbook
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.9, ease }}
+              className="space-y-3 lg:ml-auto lg:w-[17rem]"
+            >
+              {heroProofs.map(({ title, copy, Icon }) => (
+                <div
+                  key={title}
+                  className="flex items-center gap-3 border-b border-primary-foreground/15 pb-3"
+                >
+                  <Icon className="size-4 shrink-0 text-silver" />
+                  <p className="text-[11px] uppercase tracking-[0.18em]">{title}</p>
+                  <p className="ml-auto text-[11px] text-primary-foreground/50">{copy}</p>
                 </div>
-              </motion.div>
-            ))}
+              ))}
+            </motion.div>
           </div>
+        </div>
+      </div>
+
+      {/* stat plinth */}
+      <div className="relative border-t border-primary-foreground/15">
+        <div className="mx-auto grid max-w-[92rem] grid-cols-3 divide-x divide-primary-foreground/15 px-6 lg:px-10">
+          {[
+            ["47", "Years of craft"],
+            ["92.5", "Purity, always"],
+            ["1.2L+", "Happy patrons"],
+          ].map(([v, l], i) => (
+            <motion.div
+              key={l}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.9, delay: 1 + i * 0.1, ease }}
+              className="px-4 py-6 text-center first:pl-0 last:pr-0"
+            >
+              <p className="font-price text-3xl text-silver sm:text-4xl">{v}</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-primary-foreground/50">
+                {l}
+              </p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
@@ -256,17 +308,17 @@ function Index() {
     <div>
       <Hero />
 
-      <div className="overflow-hidden border-y border-border bg-ink py-4 text-primary-foreground">
+      <div className="overflow-hidden border-b border-border bg-warm-white py-4 text-foreground">
         <div className="flex w-max animate-marquee">
           {[0, 1].map((dup) => (
             <div key={dup} className="flex shrink-0">
               {marqueeWords.map((w) => (
                 <span
                   key={w + dup}
-                  className="flex items-center gap-8 px-8 font-display text-2xl italic opacity-90 sm:text-3xl"
+                  className="flex items-center gap-8 px-8 font-display text-2xl italic text-silver-deep sm:text-3xl"
                 >
                   {w}
-                  <Sparkles className="size-3.5 text-silver" />
+                  <Sparkles className="size-3.5 text-silver-deep/60" />
                 </span>
               ))}
             </div>
