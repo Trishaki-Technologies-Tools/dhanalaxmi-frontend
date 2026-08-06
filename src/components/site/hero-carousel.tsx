@@ -82,8 +82,8 @@ export function HeroCarousel() {
           <div
             className={`absolute inset-0 ${
               slide.align === "left"
-                ? "bg-linear-to-r from-background/85 via-background/45 to-transparent"
-                : "bg-linear-to-l from-background/85 via-background/45 to-transparent"
+                ? "bg-linear-to-r from-background/95 via-background/60 to-transparent"
+                : "bg-linear-to-l from-background/95 via-background/60 to-transparent"
             }`}
           />
         </motion.div>
