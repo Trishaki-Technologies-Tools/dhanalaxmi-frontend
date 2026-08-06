@@ -118,7 +118,7 @@ export function SiteHeader() {
               <Heart className="size-[18px]" />
             </Link>
             <Link
-              to="/shop"
+              to="/login"
               aria-label="Account"
               className="hidden transition-opacity hover:opacity-60 sm:block"
             >

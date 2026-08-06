@@ -11,6 +11,10 @@ const columns = [
     links: ["New Arrivals", "Best Sellers", "Gift Cards", "Order Tracking", "Compare Products"],
   },
   {
+    title: "Account",
+    links: ["Sign In", "Create Account", "My Wishlist", "Order History"],
+  },
+  {
     title: "Policies",
     links: ["Privacy Policy", "Refund Policy", "Shipping Policy", "Terms & Conditions", "FAQs"],
   },
@@ -51,7 +55,7 @@ export function SiteFooter() {
                 {col.links.map((l) => (
                   <li key={l}>
                     <Link
-                      to="/shop"
+                      to={col.title === "Account" && l === "Sign In" ? "/login" : col.title === "Account" && l === "Create Account" ? "/signup" : "/shop"}
                       className="opacity-65 transition-opacity hover:opacity-100"
                     >
                       {l}
