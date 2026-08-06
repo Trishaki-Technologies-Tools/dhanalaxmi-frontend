@@ -1,6 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
-import { useRef } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -13,13 +11,14 @@ import {
   Truck,
   Quote,
 } from "lucide-react";
-import heroCinematic from "@/assets/hero-cinematic.jpg";
 import editorialPortrait from "@/assets/editorial-portrait.jpg";
 import editorialHands from "@/assets/editorial-hands.jpg";
 import craftImage from "@/assets/craft.jpg";
 import { categories, products } from "@/lib/catalog";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
+import { HeroCarousel } from "@/components/site/hero-carousel";
+import { PromoTriptych, PopularCategories } from "@/components/site/home-sections";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,186 +39,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const ease = [0.22, 1, 0.36, 1] as const;
-
-const heroProofs = [
-  { title: "925 Hallmarked", copy: "BIS assayed purity", Icon: BadgeCheck },
-  { title: "Insured Shipping", copy: "Free, pan-India", Icon: Truck },
-  { title: "Since 1978", copy: "Three generations", Icon: Gem },
-];
-
-function Hero() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const imgY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
-  const wordY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
-  const glow = useTransform(scrollYProgress, [0, 1], [0.85, 0.2]);
-
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const tiltX = useSpring(useTransform(my, [-0.5, 0.5], [8, -8]), { stiffness: 120, damping: 18 });
-  const tiltY = useSpring(useTransform(mx, [-0.5, 0.5], [-10, 10]), { stiffness: 120, damping: 18 });
-
-  return (
-    <section
-      ref={ref}
-      onPointerMove={(e) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        mx.set((e.clientX - r.left) / r.width - 0.5);
-        my.set((e.clientY - r.top) / r.height - 0.5);
-      }}
-      className="relative isolate overflow-hidden bg-ink text-primary-foreground"
-    >
-      {/* hairline grid */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.14]">
-        {[18, 38, 62, 82].map((l) => (
-          <span key={l} className="absolute inset-y-0 w-px bg-silver" style={{ left: `${l}%` }} />
-        ))}
-      </div>
-      <motion.div
-        style={{ opacity: glow }}
-        className="pointer-events-none absolute left-1/2 top-[-18%] size-[46rem] -translate-x-1/2 rounded-full bg-silver/20 blur-[120px]"
-      />
-
-      <div className="relative mx-auto max-w-[92rem] px-6 pb-0 pt-12 lg:px-10 lg:pt-16">
-        {/* top rail */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, ease }}
-          className="flex items-center justify-between border-b border-primary-foreground/15 pb-5 text-[10px] uppercase tracking-[0.32em] text-primary-foreground/60"
-        >
-          <span>Est. 1978 · Sterling Atelier</span>
-          <span className="hidden sm:block">Vol. XI — The Silver Edit</span>
-          <span className="flex items-center gap-2">
-            <Sparkles className="size-3 text-silver" /> 92.5 Pure
-          </span>
-        </motion.div>
-
-        {/* stacked editorial title over portrait */}
-        <div className="relative pt-10 lg:pt-14">
-          <motion.h1
-            style={{ y: wordY }}
-            className="pointer-events-none relative z-20 text-center font-display leading-[0.82] tracking-[-0.02em]"
-          >
-            {["Crafted", "In Silver"].map((w, i) => (
-              <motion.span
-                key={w}
-                initial={{ opacity: 0, y: 40, filter: "blur(14px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 1.2, delay: 0.1 + i * 0.12, ease }}
-                className={`block text-[19vw] lg:text-[13.5vw] ${
-                  i === 1 ? "italic text-silver" : ""
-                }`}
-              >
-                {w}
-              </motion.span>
-            ))}
-          </motion.h1>
-
-          <motion.div
-            initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
-            animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
-            transition={{ duration: 1.6, delay: 0.35, ease }}
-            style={{ rotateX: tiltX, rotateY: tiltY, transformPerspective: 1200 }}
-            className="relative z-10 mx-auto -mt-[9vw] w-[72%] overflow-hidden rounded-t-[999px] sm:w-[52%] lg:-mt-[7vw] lg:w-[34%]"
-          >
-            <motion.img
-              style={{ y: imgY }}
-              src={heroCinematic}
-              alt="Model wearing layered hallmarked 925 sterling silver necklaces and sculptural earrings"
-              width={1024}
-              height={1408}
-              className="aspect-3/4 w-full scale-110 object-cover object-top"
-            />
-            <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/10 to-transparent" />
-          </motion.div>
-
-          {/* side copy */}
-          <div className="relative z-20 -mt-[12vw] grid gap-10 pb-14 lg:-mt-[9vw] lg:grid-cols-3 lg:items-end lg:gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.7, ease }}
-              className="max-w-xs"
-            >
-              <p className="font-display text-3xl italic leading-tight text-silver">
-                Designed for forever.
-              </p>
-              <p className="mt-4 text-[13px] leading-relaxed text-primary-foreground/65">
-                Hallmarked 925 heirlooms, hand-finished across fourteen stages by three generations
-                of South Indian silversmiths.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.8, ease }}
-              className="flex flex-wrap items-center justify-center gap-4"
-            >
-              <Link
-                to="/shop"
-                className="btn-luxe shine-sweep group flex h-14 items-center gap-3 rounded-full bg-background px-9 text-foreground transition-transform hover:-translate-y-0.5"
-              >
-                Shop the collection
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/collections"
-                className="btn-luxe flex h-14 items-center rounded-full border border-primary-foreground/30 px-8 transition-colors hover:border-silver hover:text-silver"
-              >
-                Lookbook
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.9, ease }}
-              className="space-y-3 lg:ml-auto lg:w-[17rem]"
-            >
-              {heroProofs.map(({ title, copy, Icon }) => (
-                <div
-                  key={title}
-                  className="flex items-center gap-3 border-b border-primary-foreground/15 pb-3"
-                >
-                  <Icon className="size-4 shrink-0 text-silver" />
-                  <p className="text-[11px] uppercase tracking-[0.18em]">{title}</p>
-                  <p className="ml-auto text-[11px] text-primary-foreground/50">{copy}</p>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* stat plinth */}
-      <div className="relative border-t border-primary-foreground/15">
-        <div className="mx-auto grid max-w-[92rem] grid-cols-3 divide-x divide-primary-foreground/15 px-6 lg:px-10">
-          {[
-            ["47", "Years of craft"],
-            ["92.5", "Purity, always"],
-            ["1.2L+", "Happy patrons"],
-          ].map(([v, l], i) => (
-            <motion.div
-              key={l}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.9, delay: 1 + i * 0.1, ease }}
-              className="px-4 py-6 text-center first:pl-0 last:pr-0"
-            >
-              <p className="font-price text-3xl text-silver sm:text-4xl">{v}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-primary-foreground/50">
-                {l}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 const marqueeWords = [
   "Hallmarked 925",
@@ -306,7 +125,8 @@ const whyCards = [
 function Index() {
   return (
     <div>
-      <Hero />
+      <HeroCarousel />
+      <PromoTriptych />
 
       <div className="overflow-hidden border-b border-border bg-warm-white py-4 text-foreground">
         <div className="flex w-max animate-marquee">
@@ -325,6 +145,8 @@ function Index() {
           ))}
         </div>
       </div>
+
+      <PopularCategories />
 
       <EditorialCollections />
 
