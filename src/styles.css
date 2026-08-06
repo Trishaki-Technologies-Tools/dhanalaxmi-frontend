@@ -118,9 +118,9 @@
   --shadow-luxe: 0 24px 60px -24px oklch(0.145 0 0 / 0.16);
   --shadow-luxe-lg: 0 40px 90px -30px oklch(0.145 0 0 / 0.22);
   --shadow-soft: 0 2px 18px -8px oklch(0.145 0 0 / 0.12);
-  --font-display: "DM Serif Display", "Cormorant Garamond", "Times New Roman", serif;
-  --font-body: "Manrope", system-ui, sans-serif;
-  --font-ui: "Plus Jakarta Sans", "Manrope", system-ui, sans-serif;
+  --font-display: "Jost", "Manrope", system-ui, sans-serif;
+  --font-body: "Jost", "Manrope", system-ui, sans-serif;
+  --font-ui: "Jost", "Manrope", system-ui, sans-serif;
   --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
