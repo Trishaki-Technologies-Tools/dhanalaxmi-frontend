@@ -216,7 +216,7 @@
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--muted-foreground);
+  color: var(--maroon);
 }
 
 @utility bg-silver-sheen {
