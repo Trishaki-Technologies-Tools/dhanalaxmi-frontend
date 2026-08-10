@@ -14,7 +14,7 @@ export function MobileDock() {
       <a
         href="https://wa.me/919876543210"
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-24 right-5 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-luxe transition-colors hover:bg-silver hover:text-primary md:bottom-8"
+        className="fixed bottom-24 right-5 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-luxe transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50 md:bottom-8"
       >
         <MessageCircle className="size-5" />
       </a>

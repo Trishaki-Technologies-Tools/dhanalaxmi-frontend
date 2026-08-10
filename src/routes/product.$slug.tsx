@@ -126,7 +126,7 @@ function ProductPage() {
             <div className="mt-10 flex flex-wrap gap-4">
               <button
                 onClick={() => toast.success(`${product.name} added to your bag.`)}
-                className="h-14 flex-1 rounded-full bg-primary px-8 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground shadow-luxe transition-colors hover:bg-silver hover:text-primary"
+                className="h-14 flex-1 rounded-full bg-primary px-8 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground shadow-luxe transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
               >
                 Add to bag
               </button>
@@ -215,7 +215,7 @@ function ProductPage() {
         </div>
         <button
           onClick={() => toast.success("Proceeding to secure checkout.")}
-          className="rounded-full bg-primary px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-silver hover:text-primary"
+          className="rounded-full bg-primary px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
         >
           Buy now
         </button>

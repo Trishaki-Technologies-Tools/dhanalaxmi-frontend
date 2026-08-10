@@ -33,7 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
             <Eye className="size-4" />
           </span>
         </span>
-        <span className="btn-luxe absolute inset-x-4 bottom-4 flex translate-y-4 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3.5 text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-silver hover:text-primary">
+        <span className="btn-luxe absolute inset-x-4 bottom-4 flex translate-y-4 items-center justify-center gap-2 rounded-full bg-primary px-4 py-3.5 text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50">
           <ShoppingBag className="size-4" /> Add to bag
         </span>
       </div>
