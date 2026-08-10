@@ -61,8 +61,8 @@ export function SiteHeader() {
       <AnnouncementBar />
       <div
         className={cn(
-          "border-b border-border/70 transition-all duration-500",
-          scrolled ? "glass-panel shadow-soft" : "bg-background",
+          "border-b border-primary-foreground/15 bg-primary text-primary-foreground transition-all duration-500",
+          scrolled ? "shadow-luxe" : "",
         )}
         onMouseLeave={() => setMega(false)}
       >
@@ -79,7 +79,7 @@ export function SiteHeader() {
             <span className="font-display text-2xl tracking-[0.02em] sm:text-[1.75rem]">
               Dhanalaxmi
             </span>
-            <span className="mt-1 text-[9px] uppercase tracking-[0.42em] text-muted-foreground">
+            <span className="mt-1 text-[9px] uppercase tracking-[0.42em] text-silver">
               Jeweler&apos;s · 925
             </span>
           </Link>
@@ -95,8 +95,8 @@ export function SiteHeader() {
                 >
                   <Link
                     to={item.to}
-                    className="flex items-center gap-1 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/80 transition-colors hover:text-foreground"
-                    activeProps={{ className: "text-foreground" }}
+                    className="flex items-center gap-1 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-primary-foreground/75 transition-colors hover:text-silver"
+                    activeProps={{ className: "text-primary-foreground" }}
                   >
                     {item.label}
                     {isShop ? <ChevronDown className="size-3" /> : null}
@@ -126,7 +126,7 @@ export function SiteHeader() {
             </Link>
             <button aria-label="Cart" className="relative transition-opacity hover:opacity-60">
               <ShoppingBag className="size-[18px]" />
-              <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
+              <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-silver text-[9px] font-semibold text-primary">
                 2
               </span>
             </button>
