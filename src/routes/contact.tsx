@@ -79,7 +79,7 @@ function ContactPage() {
                 className="mt-3 w-full rounded-[1.25rem] border border-border bg-secondary p-5 text-sm outline-none transition-colors focus:border-foreground"
               />
             </div>
-            <button className="w-full rounded-full bg-primary py-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-silver hover:text-primary">
+            <button className="w-full rounded-full bg-primary py-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50">
               Send enquiry
             </button>
           </form>
@@ -102,7 +102,7 @@ function ContactPage() {
           <Reveal delay={0.3}>
             <a
               href="https://wa.me/919876543210"
-              className="flex items-center justify-center gap-3 rounded-full bg-primary py-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-silver hover:text-primary"
+              className="flex items-center justify-center gap-3 rounded-full bg-primary py-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
             >
               <MessageCircle className="size-4" /> Chat on WhatsApp
             </a>

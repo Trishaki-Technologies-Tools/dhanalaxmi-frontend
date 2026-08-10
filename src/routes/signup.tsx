@@ -139,7 +139,7 @@ function SignupPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.42, ease }}
           type="submit"
-          className="btn-luxe shine-sweep flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-foreground text-primary-foreground transition-colors hover:bg-foreground/90"
+          className="btn-luxe shine-sweep flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
         >
           Create Account <ArrowRight className="size-4" />
         </motion.button>
@@ -163,7 +163,7 @@ function SignupPage() {
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
             type="button"
-            className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background text-sm transition-colors hover:bg-silver-tint"
+            className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background text-sm transition-colors hover:bg-maroon-soft hover:border-maroon/40 active:bg-maroon-soft"
           >
             <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -175,7 +175,7 @@ function SignupPage() {
           </button>
           <button
             type="button"
-            className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background text-sm transition-colors hover:bg-silver-tint"
+            className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background text-sm transition-colors hover:bg-maroon-soft hover:border-maroon/40 active:bg-maroon-soft"
           >
             <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.21-1.04 4.06-.84 1.45.17 2.46.84 3.18 1.73-2.89 1.68-2.39 5.98.22 7.13-.57 1.5-1.31 2.99-2.54 4.21zM12.03 7.25c-.15-2.55 2.11-4.69 4.65-4.74.35 2.8-2.29 5.05-4.65 4.74z" />

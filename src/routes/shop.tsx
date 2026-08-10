@@ -155,7 +155,7 @@ function ShopPage() {
                   onClick={() => setView(v)}
                   className={cn(
                     "flex size-10 items-center justify-center rounded-full border border-border transition-colors",
-                    view === v ? "bg-primary text-primary-foreground" : "hover:bg-secondary",
+                    view === v ? "bg-primary text-primary-foreground" : "hover:bg-maroon-soft hover:text-maroon",
                   )}
                 >
                   {v === "grid" ? (
@@ -196,7 +196,7 @@ function ShopPage() {
                 key={n}
                 className={cn(
                   "size-10 rounded-full border border-border text-sm transition-colors",
-                  n === 1 ? "bg-primary text-primary-foreground" : "hover:bg-secondary",
+                  n === 1 ? "bg-primary text-primary-foreground" : "hover:bg-maroon-soft hover:text-maroon",
                 )}
               >
                 {n}
