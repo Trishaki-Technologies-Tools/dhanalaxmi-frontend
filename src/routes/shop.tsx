@@ -75,14 +75,30 @@ function ShopPage() {
     return sorted;
   }, [maxPrice, cats, occ, sort]);
 
+  const activeCategory = cats.length === 1 ? categories.find((c) => c.slug === cats[0]) : null;
+
   return (
     <div className="mx-auto max-w-[88rem] px-6 py-20 lg:px-10">
       <Reveal>
         <p className="text-eyebrow">Shop</p>
-        <h1 className="mt-4 text-5xl leading-tight sm:text-6xl">The Silver Catalogue</h1>
-        <p className="mt-4 max-w-xl text-sm text-muted-foreground">
-          {visible.length} hallmarked pieces · transparent weights · lifetime polish included
-        </p>
+        <h1 className="mt-4 text-5xl leading-tight sm:text-6xl">
+          {activeCategory ? activeCategory.name : "The Silver Catalogue"}
+        </h1>
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          <p className="max-w-xl text-sm text-muted-foreground">
+            {visible.length} hallmarked pieces · transparent weights · lifetime polish included
+          </p>
+          {activeCategory && (
+            <Link
+              to="/shop"
+              search={{}}
+              onClick={() => setCats([])}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-1.5 text-xs uppercase tracking-[0.16em] transition-colors hover:bg-maroon hover:text-white"
+            >
+              <X className="size-3.5" /> Clear filter
+            </Link>
+          )}
+        </div>
       </Reveal>
 
       <div className="mt-14 grid gap-12 lg:grid-cols-[17rem_1fr]">
