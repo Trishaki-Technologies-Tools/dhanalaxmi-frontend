@@ -35,7 +35,7 @@ function LoginPage() {
       subtitle="Sign in to track orders, save your wishlist, and receive private previews first."
     >
       <form
-        className="space-y-5"
+        className="space-y-3.5"
         onSubmit={(e) => e.preventDefault()}
       >
         <motion.div
@@ -54,7 +54,7 @@ function LoginPage() {
               type="email"
               required
               placeholder="you@example.com"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
+              className="h-12 w-full rounded-xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
           </div>
         </motion.div>
@@ -75,7 +75,7 @@ function LoginPage() {
               type={showPassword ? "text" : "password"}
               required
               placeholder="Enter your password"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-12 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
+              className="h-12 w-full rounded-xl border border-border bg-background pl-12 pr-12 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
             <button
               type="button"
@@ -114,7 +114,7 @@ function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4, ease }}
           type="submit"
-          className="btn-luxe shine-sweep flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
+          className="btn-luxe shine-sweep flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
         >
           Sign In <ArrowRight className="size-4" />
         </motion.button>
@@ -124,7 +124,7 @@ function LoginPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.5, ease }}
-        className="mt-8"
+        className="mt-5"
       >
         <div className="relative flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">
@@ -135,10 +135,10 @@ function LoginPage() {
           </span>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <button
             type="button"
-            className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background text-sm transition-colors hover:bg-maroon-soft hover:border-maroon/40 active:bg-maroon-soft"
+            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm transition-colors hover:bg-maroon-soft hover:border-maroon/40 active:bg-maroon-soft"
           >
             <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -150,7 +150,7 @@ function LoginPage() {
           </button>
           <button
             type="button"
-            className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background text-sm transition-colors hover:bg-maroon-soft hover:border-maroon/40 active:bg-maroon-soft"
+            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background text-sm transition-colors hover:bg-maroon-soft hover:border-maroon/40 active:bg-maroon-soft"
           >
             <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.21-1.04 4.06-.84 1.45.17 2.46.84 3.18 1.73-2.89 1.68-2.39 5.98.22 7.13-.57 1.5-1.31 2.99-2.54 4.21zM12.03 7.25c-.15-2.55 2.11-4.69 4.65-4.74.35 2.8-2.29 5.05-4.65 4.74z" />
@@ -164,7 +164,7 @@ function LoginPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.6, ease }}
-        className="mt-8 text-center text-sm text-muted-foreground"
+        className="mt-5 text-center text-sm text-muted-foreground"
       >
         Don&apos;t have an account?{" "}
         <Link
