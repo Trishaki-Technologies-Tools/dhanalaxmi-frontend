@@ -15,6 +15,8 @@ import { SiteHeader } from "../components/site/site-header";
 import { SiteFooter } from "../components/site/site-footer";
 import { MobileDock } from "../components/site/mobile-dock";
 import { Toaster } from "../components/ui/sonner";
+import { CartProvider } from "../lib/cart";
+import { CartDrawer } from "../components/site/cart-drawer";
 
 function NotFoundComponent() {
   return (
@@ -135,14 +137,17 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SiteHeader />
-      <main className="pb-20 md:pb-0">
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </main>
-      <SiteFooter />
-      <MobileDock />
-      <Toaster />
+      <CartProvider>
+        <SiteHeader />
+        <main className="pb-20 md:pb-0">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <SiteFooter />
+        <MobileDock />
+        <CartDrawer />
+        <Toaster />
+      </CartProvider>
     </QueryClientProvider>
   );
 }

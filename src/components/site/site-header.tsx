@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Menu, Search, Heart, ShoppingBag, User, X, ChevronDown } from "lucide-react";
 import { categories } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/lib/cart";
 
 const announcements = [
   "Complimentary insured shipping across India",
@@ -48,6 +49,7 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [mega, setMega] = useState(false);
   const [mobile, setMobile] = useState(false);
+  const { count, setOpen } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -124,11 +126,17 @@ export function SiteHeader() {
             >
               <User className="size-[18px]" />
             </Link>
-            <button aria-label="Cart" className="relative transition-opacity hover:opacity-60">
+            <button
+              aria-label="Cart"
+              onClick={() => setOpen(true)}
+              className="relative transition-opacity hover:opacity-60"
+            >
               <ShoppingBag className="size-[18px]" />
-              <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-silver text-[9px] font-semibold text-primary">
-                2
-              </span>
+              {count > 0 ? (
+                <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-silver text-[9px] font-semibold text-primary">
+                  {count}
+                </span>
+              ) : null}
             </button>
           </div>
         </div>
