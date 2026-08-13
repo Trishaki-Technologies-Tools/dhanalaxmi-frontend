@@ -42,7 +42,7 @@ const slides: Slide[] = [
     title: ["Timeless Pieces,", "Everyday Luxury"],
     copy: "Free insured shipping, lifetime polish and certified hallmark on every order",
     cta: "Shop The Edit",
-    align: "right",
+    align: "left",
   },
 ];
 
