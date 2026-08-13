@@ -222,7 +222,7 @@ function ProductPage() {
         <button
           onClick={() => {
             add(product.slug);
-            setOpen(true);
+            navigate({ to: "/checkout" });
           }}
           className="rounded-full bg-primary px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
         >
