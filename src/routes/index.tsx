@@ -117,9 +117,10 @@ function Index() {
   return (
     <div>
       <HeroCarousel />
-      <PopularCategories />
 
       <ShopByCategory />
+
+      <PopularCategories />
 
       <PromoTriptych />
 
