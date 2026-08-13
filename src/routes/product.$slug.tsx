@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   BadgeCheck,
@@ -46,6 +46,7 @@ function ProductPage() {
   const { product } = Route.useLoaderData();
   const [active, setActive] = useState(0);
   const { add, setOpen } = useCart();
+  const navigate = useNavigate();
   const gallery = [product.image, product.image, product.image, product.image];
   const related = products.filter((p) => p.slug !== product.slug).slice(0, 4);
 
