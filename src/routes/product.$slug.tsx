@@ -51,11 +51,11 @@ function ProductPage() {
     <div>
       <div className="mx-auto max-w-[88rem] px-6 py-10 lg:px-10">
         <nav className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">
+          <Link to="/" className="transition-colors hover:text-maroon">
             Home
           </Link>
           <span className="px-2">/</span>
-          <Link to="/shop" className="hover:text-foreground">
+          <Link to="/shop" className="transition-colors hover:text-maroon">
             Shop
           </Link>
           <span className="px-2">/</span>
@@ -81,7 +81,7 @@ function ProductPage() {
                   onClick={() => setActive(i)}
                   className={cn(
                     "overflow-hidden rounded-[1rem] border bg-secondary transition-colors",
-                    active === i ? "border-foreground" : "border-border",
+                    active === i ? "border-maroon" : "border-border",
                   )}
                 >
                   <img
@@ -101,7 +101,7 @@ function ProductPage() {
             <p className="text-eyebrow">{product.categoryLabel}</p>
             <h1 className="mt-4 text-4xl leading-tight sm:text-5xl">{product.name}</h1>
             <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-              <Star className="size-4 fill-current text-foreground" />
+              <Star className="size-4 fill-current text-maroon" />
               {product.rating.toFixed(1)} · {product.reviews} reviews
               <span className="px-2">|</span>
               <span className={product.stock < 5 ? "text-foreground" : ""}>
@@ -133,7 +133,7 @@ function ProductPage() {
               <button
                 onClick={() => toast("Saved to your wishlist.")}
                 aria-label="Add to wishlist"
-                className="flex size-14 items-center justify-center rounded-full border border-border transition-colors hover:bg-secondary"
+                className="flex size-14 items-center justify-center rounded-full border border-border transition-colors hover:bg-maroon-soft hover:text-maroon"
               >
                 <Heart className="size-5" />
               </button>
@@ -168,7 +168,7 @@ function ProductPage() {
                 const I = Icon as typeof BadgeCheck;
                 return (
                   <div key={i} className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <I className="size-4 text-foreground" />
+                    <I className="size-4 text-maroon" />
                     {label as string}
                   </div>
                 );
@@ -193,7 +193,7 @@ function ProductPage() {
             <h2 className="text-4xl">You may also love</h2>
             <Link
               to="/shop"
-              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] hover:opacity-60"
+              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-foreground transition-colors hover:text-maroon"
             >
               Browse all <ArrowRight className="size-4" />
             </Link>

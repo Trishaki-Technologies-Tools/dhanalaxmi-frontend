@@ -148,9 +148,10 @@ export function SiteHeader() {
                   <ul className="mt-6 grid grid-cols-2 gap-3 text-sm">
                     {categories.slice(0, 6).map((c) => (
                       <li key={c.slug}>
-                        <Link
+                    <Link
                           to="/shop"
-                          className="text-muted-foreground transition-colors hover:text-foreground"
+                          search={{ category: c.slug }}
+                          className="text-muted-foreground transition-colors hover:text-maroon"
                         >
                           {c.name}
                         </Link>
@@ -165,7 +166,7 @@ export function SiteHeader() {
                       <li key={c.slug}>
                         <Link
                           to="/collections"
-                          className="text-muted-foreground transition-colors hover:text-foreground"
+                          className="text-muted-foreground transition-colors hover:text-maroon"
                         >
                           {c.name}
                         </Link>

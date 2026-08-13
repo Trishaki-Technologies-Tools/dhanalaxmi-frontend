@@ -72,7 +72,7 @@ function AboutPage() {
             ["Assay", "BIS hallmark, weight card and lifetime warranty."],
           ].map(([t, c], i) => (
             <Reveal key={t} delay={i * 0.08} className="border-t border-border pt-6">
-              <p className="font-price text-xl text-silver-deep">0{i + 1}</p>
+              <p className="font-price text-xl text-maroon">0{i + 1}</p>
               <p className="mt-3 text-lg">{t}</p>
               <p className="mt-2 text-sm text-muted-foreground">{c}</p>
             </Reveal>

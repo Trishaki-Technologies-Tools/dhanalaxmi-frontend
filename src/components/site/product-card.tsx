@@ -9,7 +9,7 @@ export function ProductCard({ product }: { product: Product }) {
     <Link
       to="/product/$slug"
       params={{ slug: product.slug }}
-      className="group block overflow-hidden rounded-xl border border-border bg-card transition-[transform,box-shadow,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-silver hover:shadow-luxe"
+      className="group block overflow-hidden rounded-xl border border-border bg-card transition-[transform,box-shadow,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-maroon hover:shadow-luxe"
     >
       <div className="shine-sweep relative overflow-hidden bg-pearl">
         <img
@@ -26,10 +26,10 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         ) : null}
         <span className="absolute right-3 top-3 flex flex-col gap-1.5">
-          <span className="flex size-8 translate-x-3 items-center justify-center rounded-full bg-background/85 opacity-0 shadow-soft backdrop-blur transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 hover:bg-silver">
+          <span className="flex size-8 translate-x-3 items-center justify-center rounded-full bg-background/85 text-foreground opacity-0 shadow-soft backdrop-blur transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 hover:bg-maroon-soft hover:text-maroon">
             <Heart className="size-3.5" />
           </span>
-          <span className="flex size-8 translate-x-3 items-center justify-center rounded-full bg-background/85 opacity-0 shadow-soft backdrop-blur transition-all delay-75 duration-500 group-hover:translate-x-0 group-hover:opacity-100 hover:bg-silver">
+          <span className="flex size-8 translate-x-3 items-center justify-center rounded-full bg-background/85 text-foreground opacity-0 shadow-soft backdrop-blur transition-all delay-75 duration-500 group-hover:translate-x-0 group-hover:opacity-100 hover:bg-maroon-soft hover:text-maroon">
             <Eye className="size-3.5" />
           </span>
         </span>
@@ -38,12 +38,12 @@ export function ProductCard({ product }: { product: Product }) {
         </span>
       </div>
       <div className="space-y-1 p-3">
-        <p className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="text-[8px] uppercase tracking-[0.2em] text-maroon">
           {product.categoryLabel}
         </p>
         <h3 className="line-clamp-1 text-sm leading-snug">{product.name}</h3>
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Star className="size-2.5 fill-current text-foreground" />
+          <Star className="size-2.5 fill-current text-maroon" />
           {product.rating.toFixed(1)} · {product.reviews} reviews
         </div>
         <div className="flex flex-wrap items-baseline gap-1.5 pt-0.5">
@@ -51,7 +51,7 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="text-[10px] text-muted-foreground line-through">
             {formatINR(product.mrp)}
           </span>
-          <span className="text-[9px] font-semibold text-silver-deep">{off}% off</span>
+          <span className="text-[9px] font-semibold text-maroon">{off}% off</span>
         </div>
       </div>
     </Link>

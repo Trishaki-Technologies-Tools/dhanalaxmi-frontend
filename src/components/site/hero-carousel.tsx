@@ -132,7 +132,7 @@ export function HeroCarousel() {
             <Link
               to="/shop"
               search={slide.eyebrow === "Earring Edit" ? { category: "earrings" } : {}}
-              className="btn-luxe shine-sweep inline-flex h-12 items-center border border-foreground px-9 text-sm uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-foreground hover:text-primary-foreground"
+              className="btn-luxe shine-sweep inline-flex h-12 items-center border border-maroon px-9 text-sm uppercase tracking-[0.18em] text-maroon transition-colors hover:bg-maroon hover:text-primary-foreground"
             >
               {slide.cta}
             </Link>
@@ -143,14 +143,14 @@ export function HeroCarousel() {
       <button
         aria-label="Previous slide"
         onClick={() => go(-1)}
-        className="absolute left-2 top-1/2 z-10 -translate-y-1/2 p-3 text-foreground/60 transition-colors hover:text-foreground lg:left-5"
+        className="absolute left-2 top-1/2 z-10 -translate-y-1/2 p-3 text-foreground/60 transition-colors hover:text-maroon lg:left-5"
       >
         <ChevronLeft className="size-8" strokeWidth={1} />
       </button>
       <button
         aria-label="Next slide"
         onClick={() => go(1)}
-        className="absolute right-2 top-1/2 z-10 -translate-y-1/2 p-3 text-foreground/60 transition-colors hover:text-foreground lg:right-5"
+        className="absolute right-2 top-1/2 z-10 -translate-y-1/2 p-3 text-foreground/60 transition-colors hover:text-maroon lg:right-5"
       >
         <ChevronRight className="size-8" strokeWidth={1} />
       </button>
@@ -162,7 +162,7 @@ export function HeroCarousel() {
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => setIndex(i)}
             className={`size-2 rounded-full transition-all ${
-              i === index ? "w-6 bg-foreground" : "bg-foreground/30 hover:bg-foreground/60"
+              i === index ? "w-6 bg-maroon" : "bg-foreground/30 hover:bg-maroon/60"
             }`}
           />
         ))}

@@ -46,7 +46,7 @@ export function PromoTriptych() {
               <div
                 className={`absolute inset-0 ${
                   p.dark
-                    ? "bg-linear-to-r from-ink/85 via-ink/40 to-transparent"
+                    ? "bg-linear-to-r from-maroon-deep/85 via-maroon-deep/40 to-transparent"
                     : "bg-linear-to-r from-background/80 via-background/30 to-transparent"
                 }`}
               />
@@ -63,7 +63,7 @@ export function PromoTriptych() {
                     </span>
                   ))}
                 </p>
-                <span className="btn-luxe mt-5 w-fit border-b border-current pb-1 text-[11px] uppercase tracking-[0.2em]">
+                <span className="btn-luxe mt-5 w-fit border-b border-current pb-1 text-[11px] uppercase tracking-[0.2em] transition-colors group-hover:text-maroon">
                   {p.cta}
                 </span>
               </div>
@@ -101,7 +101,7 @@ export function PopularCategories() {
                     className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </span>
-                <span className="border-b border-transparent pb-1 text-[11px] uppercase tracking-[0.2em] transition-colors group-hover:border-foreground">
+                <span className="border-b border-transparent pb-1 text-[11px] uppercase tracking-[0.2em] transition-colors group-hover:border-maroon group-hover:text-maroon">
                   {c.name}
                 </span>
               </Link>
@@ -151,7 +151,7 @@ export function ShopByCategory() {
                 <Link
                   to="/shop"
                   search={{ category: slug }}
-                  className="btn-luxe group flex items-center gap-2 rounded-full border border-foreground/15 bg-background px-6 py-2.5 text-sm transition-all hover:bg-foreground hover:text-primary-foreground"
+                  className="btn-luxe group flex items-center gap-2 rounded-full border border-maroon/15 bg-background px-6 py-2.5 text-sm text-maroon transition-all hover:bg-maroon hover:text-primary-foreground"
                 >
                   View more
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />

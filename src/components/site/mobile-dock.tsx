@@ -24,7 +24,7 @@ export function MobileDock() {
             key={label}
             to={to}
             className="flex flex-col items-center gap-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground"
-            activeProps={{ className: "text-foreground" }}
+            activeProps={{ className: "text-maroon" }}
           >
             <Icon className="size-[18px]" />
             {label}

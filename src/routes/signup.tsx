@@ -54,7 +54,7 @@ function SignupPage() {
               type="text"
               required
               placeholder="Your full name"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-foreground/60 focus:ring-1 focus:ring-foreground/10"
+              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
           </div>
         </motion.div>
@@ -75,7 +75,7 @@ function SignupPage() {
               type="email"
               required
               placeholder="you@example.com"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-foreground/60 focus:ring-1 focus:ring-foreground/10"
+              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
           </div>
         </motion.div>
@@ -96,12 +96,12 @@ function SignupPage() {
               type={showPassword ? "text" : "password"}
               required
               placeholder="Create a strong password"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-12 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-foreground/60 focus:ring-1 focus:ring-foreground/10"
+              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-12 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-maroon"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
@@ -119,15 +119,15 @@ function SignupPage() {
             id="terms"
             type="checkbox"
             required
-            className="mt-1 size-4 rounded-md border-border accent-foreground"
+            className="mt-1 size-4 rounded-md border-border accent-primary"
           />
           <label htmlFor="terms" className="text-sm leading-relaxed text-muted-foreground">
             I agree to the{" "}
-            <Link to="/" className="text-foreground underline-offset-4 hover:underline">
+            <Link to="/" className="text-foreground underline-offset-4 transition-colors hover:text-maroon hover:underline">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/" className="text-foreground underline-offset-4 hover:underline">
+            <Link to="/" className="text-foreground underline-offset-4 transition-colors hover:text-maroon hover:underline">
               Privacy Policy
             </Link>
             .
@@ -194,7 +194,7 @@ function SignupPage() {
         Already have an account?{" "}
         <Link
           to="/login"
-          className="font-medium text-foreground underline-offset-4 transition-colors hover:text-silver-deep hover:underline"
+          className="font-medium text-foreground underline-offset-4 transition-colors hover:text-maroon hover:underline"
         >
           Sign in
         </Link>
