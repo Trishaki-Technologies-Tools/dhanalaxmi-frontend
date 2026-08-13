@@ -144,7 +144,7 @@ export function ShopByCategory() {
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
-              <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((p, i) => (
                   <Reveal key={p.slug} delay={i * 0.06}>
                     <ProductCard product={p} />
