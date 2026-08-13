@@ -109,13 +109,21 @@ export function PopularCategories() {
   );
 }
 
-const categoryOrder = ["bracelets", "chains", "rings", "earrings", "pendants"];
+const categoryOrder = [
+  "earrings",
+  "bracelets",
+  "chains",
+  "kada",
+  "payal",
+  "rings",
+  "pendants",
+];
 
 export function ShopByCategory() {
   const sections = categoryOrder
     .map((slug) => {
       const category = categories.find((c) => c.slug === slug);
-      const items = products.filter((p) => p.category === slug).slice(0, 6);
+      const items = products.filter((p) => p.category === slug).slice(0, 5);
       return { slug, category, items };
     })
     .filter((s) => s.category && s.items.length > 0);
@@ -127,7 +135,7 @@ export function ShopByCategory() {
         return (
           <section
             key={slug}
-            className={isEven ? "bg-background py-20 lg:py-28" : "bg-pearl py-20 lg:py-28"}
+            className={isEven ? "bg-background py-12 lg:py-16" : "bg-pearl py-12 lg:py-16"}
           >
             <div className="mx-auto max-w-[88rem] px-6 lg:px-10">
               <div className="flex flex-wrap items-end justify-between gap-6">
@@ -144,7 +152,7 @@ export function ShopByCategory() {
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
-              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {items.map((p, i) => (
                   <Reveal key={p.slug} delay={i * 0.06}>
                     <ProductCard product={p} />
