@@ -6,7 +6,6 @@ import {
   Gem,
   Headphones,
   ShieldCheck,
-  Sparkles,
   Star,
   Truck,
   Quote,
@@ -39,14 +38,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-
-const marqueeWords = [
-  "Hallmarked 925",
-  "Hand Polished",
-  "Lifetime Care",
-  "Made In India",
-  "Insured Delivery",
-];
 
 function EditorialCollections() {
   const featured = categories.slice(0, 4);
@@ -126,29 +117,7 @@ function Index() {
   return (
     <div>
       <HeroCarousel />
-      <PromoTriptych />
-
-      <div className="overflow-hidden border-b border-border bg-warm-white py-4 text-foreground">
-        <div className="flex w-max animate-marquee">
-          {[0, 1].map((dup) => (
-            <div key={dup} className="flex shrink-0">
-              {marqueeWords.map((w) => (
-                <span
-                  key={w + dup}
-                  className="flex items-center gap-8 px-8 font-display text-2xl italic text-silver-deep sm:text-3xl"
-                >
-                  {w}
-                  <Sparkles className="size-3.5 text-silver-deep/60" />
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
       <PopularCategories />
-
-      <EditorialCollections />
 
       <section className="bg-background py-20 lg:py-28">
         <div className="mx-auto max-w-[88rem] px-6 lg:px-10">
@@ -170,6 +139,10 @@ function Index() {
           </div>
         </div>
       </section>
+
+      <PromoTriptych />
+
+      <EditorialCollections />
 
       {/* Editorial diptych */}
       <section className="bg-mist py-20 lg:py-28">
