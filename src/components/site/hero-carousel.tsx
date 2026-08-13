@@ -72,17 +72,10 @@ export function HeroCarousel() {
           transition={{ duration: 1.4, ease }}
           className="absolute inset-0"
         >
-          {/* Soft ambient fill so the portrait can be shown whole on wide screens */}
-          <img
-            src={slide.image}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 hidden size-full scale-110 object-cover blur-3xl saturate-125 lg:block"
-          />
           <img
             src={slide.image}
             alt={slide.alt}
-            className="relative size-full object-cover lg:object-contain lg:object-right"
+            className="size-full object-cover"
             width={1600}
             height={1000}
           />
