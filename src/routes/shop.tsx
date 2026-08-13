@@ -117,7 +117,7 @@ function ShopPage() {
               value={maxPrice}
               aria-label="Maximum price"
               onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full accent-foreground"
+              className="w-full accent-primary"
             />
           </FilterGroup>
 
@@ -128,7 +128,7 @@ function ShopPage() {
                   type="checkbox"
                   checked={cats.includes(c.slug)}
                   onChange={() => toggle(cats, c.slug, setCats)}
-                  className="size-4 accent-foreground"
+                  className="size-4 accent-primary"
                 />
                 <span className="text-muted-foreground">{c.name}</span>
               </label>
@@ -142,7 +142,7 @@ function ShopPage() {
                   type="checkbox"
                   checked={occ.includes(o)}
                   onChange={() => toggle(occ, o, setOcc)}
-                  className="size-4 accent-foreground"
+                  className="size-4 accent-primary"
                 />
                 <span className="text-muted-foreground">{o}</span>
               </label>

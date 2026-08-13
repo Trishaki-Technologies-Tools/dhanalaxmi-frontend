@@ -54,7 +54,7 @@ function CollectionsPage() {
                     {c.tagline}
                   </p>
                 </div>
-                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="size-5 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-maroon" />
               </div>
             </Link>
           </Reveal>

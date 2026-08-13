@@ -63,7 +63,7 @@ function ContactPage() {
                   name={f.name}
                   type={f.type}
                   required
-                  className="mt-3 h-12 w-full rounded-full border border-border bg-secondary px-5 text-sm outline-none transition-colors focus:border-foreground"
+                  className="mt-3 h-12 w-full rounded-full border border-border bg-secondary px-5 text-sm outline-none transition-colors focus:border-maroon"
                 />
               </div>
             ))}
@@ -76,7 +76,7 @@ function ContactPage() {
                 name="message"
                 rows={5}
                 required
-                className="mt-3 w-full rounded-[1.25rem] border border-border bg-secondary p-5 text-sm outline-none transition-colors focus:border-foreground"
+                className="mt-3 w-full rounded-[1.25rem] border border-border bg-secondary p-5 text-sm outline-none transition-colors focus:border-maroon"
               />
             </div>
             <button className="w-full rounded-full bg-primary py-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50">
@@ -89,8 +89,8 @@ function ContactPage() {
           {details.map(({ Icon, title, copy }, i) => (
             <Reveal key={title} delay={i * 0.07}>
               <div className="luxe-card luxe-card-hover flex items-start gap-5 p-7">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-secondary">
-                  <Icon className="size-4" />
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-maroon/20 bg-maroon-soft">
+                  <Icon className="size-4 text-maroon" />
                 </span>
                 <div>
                   <p className="text-eyebrow">{title}</p>
