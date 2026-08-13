@@ -5,6 +5,37 @@ import bracelets from "@/assets/cat-bracelets.jpg";
 import pendants from "@/assets/cat-pendants.jpg";
 import idols from "@/assets/cat-idols.jpg";
 
+import pRing1 from "@/assets/p-rings-1.jpg";
+import pRing2 from "@/assets/p-rings-2.jpg";
+import pRing3 from "@/assets/p-rings-3.jpg";
+import pRing4 from "@/assets/p-rings-4.jpg";
+import pRing5 from "@/assets/p-rings-5.jpg";
+import pRing6 from "@/assets/p-rings-6.jpg";
+import pChain1 from "@/assets/p-chains-1.jpg";
+import pChain2 from "@/assets/p-chains-2.jpg";
+import pChain3 from "@/assets/p-chains-3.jpg";
+import pChain4 from "@/assets/p-chains-4.jpg";
+import pChain5 from "@/assets/p-chains-5.jpg";
+import pChain6 from "@/assets/p-chains-6.jpg";
+import pBrac1 from "@/assets/p-bracelets-1.jpg";
+import pBrac2 from "@/assets/p-bracelets-2.jpg";
+import pBrac3 from "@/assets/p-bracelets-3.jpg";
+import pBrac4 from "@/assets/p-bracelets-4.jpg";
+import pBrac5 from "@/assets/p-bracelets-5.jpg";
+import pBrac6 from "@/assets/p-bracelets-6.jpg";
+import pEar1 from "@/assets/p-earrings-1.jpg";
+import pEar2 from "@/assets/p-earrings-2.jpg";
+import pEar3 from "@/assets/p-earrings-3.jpg";
+import pEar4 from "@/assets/p-earrings-4.jpg";
+import pEar5 from "@/assets/p-earrings-5.jpg";
+import pEar6 from "@/assets/p-earrings-6.jpg";
+import pPen1 from "@/assets/p-pendants-1.jpg";
+import pPen2 from "@/assets/p-pendants-2.jpg";
+import pPen3 from "@/assets/p-pendants-3.jpg";
+import pPen4 from "@/assets/p-pendants-4.jpg";
+import pPen5 from "@/assets/p-pendants-5.jpg";
+import pPen6 from "@/assets/p-pendants-6.jpg";
+
 export const categoryImages = { rings, chains, earrings, bracelets, pendants, idols };
 
 export type Category = {
@@ -48,18 +79,44 @@ export type Product = {
 };
 
 const base: Array<[string, string, string, number, number, string, number, string, string?]> = [
-  ["Aarohi Eternity Band", "rings", "Silver Rings", 4290, 5200, rings, 6.2, "Wedding", "Bestseller"],
-  ["Kanaka Link Chain", "chains", "Silver Chains", 6890, 8400, chains, 18.4, "Everyday", "Trending"],
-  ["Meera Teardrop Earrings", "earrings", "Earrings", 3450, 4100, earrings, 5.1, "Festive"],
-  ["Nithya Cuff Bracelet", "bracelets", "Bracelets", 5990, 7200, bracelets, 14.8, "Everyday"],
-  ["Rudra Temple Pendant", "pendants", "Pendants", 2890, 3600, pendants, 4.4, "Temple", "New"],
+  // Bracelets
+  ["Nithya Cuff Bracelet", "bracelets", "Bracelets", 5990, 7200, pBrac1, 14.8, "Everyday", "Bestseller"],
+  ["Mira Charm Bracelet", "bracelets", "Bracelets", 4490, 5400, pBrac2, 11.2, "Gifting"],
+  ["Ira Braided Bracelet", "bracelets", "Bracelets", 3890, 4700, pBrac3, 9.6, "Everyday"],
+  ["Saanvi Beaded Bangle", "bracelets", "Bracelets", 4190, 5100, pBrac4, 10.4, "Festive", "New"],
+  ["Diya Line Bracelet", "bracelets", "Bracelets", 7490, 8900, pBrac5, 13.1, "Wedding", "Trending"],
+  ["Aria Bar Link Bracelet", "bracelets", "Bracelets", 3290, 3900, pBrac6, 8.2, "Everyday"],
+  // Chains
+  ["Kanaka Link Chain", "chains", "Silver Chains", 6890, 8400, pChain1, 18.4, "Everyday", "Trending"],
+  ["Samrat Curb Chain", "chains", "Silver Chains", 8490, 9900, pChain2, 26.3, "Wedding"],
+  ["Nira Fine Box Chain", "chains", "Silver Chains", 3590, 4300, pChain3, 7.8, "Everyday", "New"],
+  ["Veda Rope Chain", "chains", "Silver Chains", 7290, 8600, pChain4, 21.5, "Festive"],
+  ["Arjun Figaro Chain", "chains", "Silver Chains", 6490, 7700, pChain5, 19.2, "Everyday"],
+  ["Rohan Snake Chain", "chains", "Silver Chains", 5890, 7000, pChain6, 16.4, "Gifting"],
+  // Rings
+  ["Aarohi Eternity Band", "rings", "Silver Rings", 4290, 5200, pRing1, 6.2, "Wedding", "Bestseller"],
+  ["Vaidehi Stackable Ring", "rings", "Silver Rings", 2190, 2700, pRing2, 3.1, "Everyday", "New"],
+  ["Kavya Bridal Ring Set", "rings", "Silver Rings", 11900, 14500, pRing3, 15.4, "Wedding", "Trending"],
+  ["Advik Signet Ring", "rings", "Silver Rings", 5490, 6500, pRing4, 9.8, "Everyday"],
+  ["Riya Twisted Rope Ring", "rings", "Silver Rings", 2790, 3400, pRing5, 4.0, "Gifting"],
+  ["Anvi Engraved Band", "rings", "Silver Rings", 3490, 4200, pRing6, 5.6, "Festive"],
+  // Earrings
+  ["Meera Teardrop Earrings", "earrings", "Earrings", 3450, 4100, pEar1, 5.1, "Festive", "Bestseller"],
+  ["Tara Hoop Earrings", "earrings", "Earrings", 2790, 3300, pEar2, 4.2, "Everyday"],
+  ["Nyra Solitaire Studs", "earrings", "Earrings", 2290, 2800, pEar3, 2.6, "Everyday", "New"],
+  ["Reva Temple Jhumkas", "earrings", "Earrings", 6890, 8200, pEar4, 12.8, "Temple", "Trending"],
+  ["Kiara Huggie Hoops", "earrings", "Earrings", 1990, 2400, pEar5, 2.2, "Everyday"],
+  ["Saira Pearl Drops", "earrings", "Earrings", 3990, 4700, pEar6, 4.8, "Gifting"],
+  // Pendants
+  ["Ishira Solitaire Pendant", "pendants", "Pendants", 4590, 5500, pPen1, 5.8, "Gifting", "Bestseller"],
+  ["Rudra Temple Pendant", "pendants", "Pendants", 2890, 3600, pPen2, 4.4, "Temple", "New"],
+  ["Anika Heart Pendant", "pendants", "Pendants", 2490, 3000, pPen3, 3.6, "Gifting"],
+  ["Ojas Engraved Locket", "pendants", "Pendants", 5290, 6300, pPen4, 8.4, "Festive"],
+  ["Neel Minimal Bar Pendant", "pendants", "Pendants", 2190, 2600, pPen5, 3.0, "Everyday"],
+  ["Chandra Moon Pendant", "pendants", "Pendants", 3390, 4000, pPen6, 4.6, "Festive", "Trending"],
+  // Other
   ["Laxmi Devotional Idol", "idols", "Silver Idols", 18900, 22500, idols, 96.0, "Gifting"],
-  ["Vaidehi Stackable Ring", "rings", "Silver Rings", 2190, 2700, rings, 3.1, "Everyday", "New"],
   ["Anaya Rope Anklet", "anklets", "Anklets", 3990, 4800, bracelets, 12.6, "Festive"],
-  ["Ishira Solitaire Pendant", "pendants", "Pendants", 4590, 5500, pendants, 5.8, "Gifting", "Bestseller"],
-  ["Tara Hoop Earrings", "earrings", "Earrings", 2790, 3300, earrings, 4.2, "Everyday"],
-  ["Samrat Curb Chain", "chains", "Silver Chains", 8490, 9900, chains, 26.3, "Wedding"],
-  ["Kavya Bridal Ring Set", "rings", "Silver Rings", 11900, 14500, rings, 15.4, "Wedding", "Trending"],
 ];
 
 export const products: Product[] = base.map(

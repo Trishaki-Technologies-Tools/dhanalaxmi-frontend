@@ -115,7 +115,7 @@ export function ShopByCategory() {
   const sections = categoryOrder
     .map((slug) => {
       const category = categories.find((c) => c.slug === slug);
-      const items = products.filter((p) => p.category === slug).slice(0, 4);
+      const items = products.filter((p) => p.category === slug).slice(0, 6);
       return { slug, category, items };
     })
     .filter((s) => s.category && s.items.length > 0);
@@ -144,7 +144,7 @@ export function ShopByCategory() {
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
-              <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((p, i) => (
                   <Reveal key={p.slug} delay={i * 0.06}>
                     <ProductCard product={p} />
