@@ -46,7 +46,7 @@ export function PromoTriptych() {
               <div
                 className={`absolute inset-0 ${
                   p.dark
-                    ? "bg-linear-to-r from-ink/85 via-ink/40 to-transparent"
+                    ? "bg-linear-to-r from-maroon-deep/85 via-maroon-deep/40 to-transparent"
                     : "bg-linear-to-r from-background/80 via-background/30 to-transparent"
                 }`}
               />
