@@ -31,7 +31,7 @@ export function AuthLayout({
             width={960}
             height={1280}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-ink/80 via-ink/20 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-maroon-deep/90 via-maroon-deep/30 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-12 text-primary-foreground">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
