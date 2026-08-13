@@ -54,7 +54,7 @@ function LoginPage() {
               type="email"
               required
               placeholder="you@example.com"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-foreground/60 focus:ring-1 focus:ring-foreground/10"
+              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
           </div>
         </motion.div>
@@ -75,12 +75,12 @@ function LoginPage() {
               type={showPassword ? "text" : "password"}
               required
               placeholder="Enter your password"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-12 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-foreground/60 focus:ring-1 focus:ring-foreground/10"
+              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-12 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-maroon"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
@@ -97,13 +97,13 @@ function LoginPage() {
           <label className="flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
-              className="size-4 rounded-md border-border accent-foreground"
+              className="size-4 rounded-md border-border accent-primary"
             />
             <span className="text-sm text-muted-foreground">Remember me</span>
           </label>
           <Link
             to="/login"
-            className="text-sm text-foreground underline-offset-4 transition-colors hover:text-silver-deep hover:underline"
+            className="text-sm text-foreground underline-offset-4 transition-colors hover:text-maroon hover:underline"
           >
             Forgot password?
           </Link>
@@ -169,7 +169,7 @@ function LoginPage() {
         Don&apos;t have an account?{" "}
         <Link
           to="/signup"
-          className="font-medium text-foreground underline-offset-4 transition-colors hover:text-silver-deep hover:underline"
+          className="font-medium text-foreground underline-offset-4 transition-colors hover:text-maroon hover:underline"
         >
           Create one
         </Link>

@@ -54,7 +54,7 @@ function SignupPage() {
               type="text"
               required
               placeholder="Your full name"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-foreground/60 focus:ring-1 focus:ring-foreground/10"
+              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
           </div>
         </motion.div>
@@ -75,7 +75,7 @@ function SignupPage() {
               type="email"
               required
               placeholder="you@example.com"
-              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-foreground/60 focus:ring-1 focus:ring-foreground/10"
+              className="h-14 w-full rounded-2xl border border-border bg-background pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-maroon/60 focus:ring-1 focus:ring-maroon/10"
             />
           </div>
         </motion.div>
