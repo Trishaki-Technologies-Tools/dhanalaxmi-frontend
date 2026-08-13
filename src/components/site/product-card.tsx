@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Eye, Heart, ShoppingBag, Star } from "lucide-react";
 import { formatINR, type Product } from "@/lib/catalog";
+import { useCart } from "@/lib/cart";
 
 export function ProductCard({ product }: { product: Product }) {
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+  const { add, setOpen } = useCart();
 
   return (
     <Link
@@ -33,7 +35,18 @@ export function ProductCard({ product }: { product: Product }) {
             <Eye className="size-3.5" />
           </span>
         </span>
-        <span className="btn-luxe absolute inset-x-2 bottom-2 flex translate-y-4 items-center justify-center gap-1.5 rounded-full bg-primary px-2 py-2 text-[11px] text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50">
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={`Add ${product.name} to bag`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            add(product.slug);
+            setOpen(true);
+          }}
+          className="btn-luxe absolute inset-x-2 bottom-2 flex translate-y-4 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-primary px-2 py-2 text-[11px] text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon-deep active:bg-maroon-deep"
+        >
           <ShoppingBag className="size-3" /> Add to bag
         </span>
       </div>
