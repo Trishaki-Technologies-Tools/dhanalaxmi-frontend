@@ -44,8 +44,14 @@ function FilterGroup({ title, children }: { title: string; children: React.React
 }
 
 function ShopPage() {
+  const search = Route.useSearch();
+  const initialCategory = search.category?.toLowerCase();
+  const isValidCategory = categories.some((c) => c.slug === initialCategory);
+
   const [maxPrice, setMaxPrice] = useState(20000);
-  const [cats, setCats] = useState<string[]>([]);
+  const [cats, setCats] = useState<string[]>(
+    isValidCategory && initialCategory ? [initialCategory] : [],
+  );
   const [occ, setOcc] = useState<string[]>([]);
   const [sort, setSort] = useState<(typeof sorts)[number]>("Popularity");
   const [view, setView] = useState<"grid" | "list">("grid");
