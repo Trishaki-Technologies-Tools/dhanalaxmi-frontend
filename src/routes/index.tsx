@@ -17,7 +17,7 @@ import { categories, products } from "@/lib/catalog";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
 import { HeroCarousel } from "@/components/site/hero-carousel";
-import { PromoTriptych, PopularCategories } from "@/components/site/home-sections";
+import { PromoTriptych, PopularCategories, ShopByCategory } from "@/components/site/home-sections";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -119,26 +119,7 @@ function Index() {
       <HeroCarousel />
       <PopularCategories />
 
-      <section className="bg-background py-20 lg:py-28">
-        <div className="mx-auto max-w-[88rem] px-6 lg:px-10">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionHeading eyebrow="Best Sellers" title="Most loved this season" align="left" />
-            <Link
-              to="/shop"
-              className="btn-luxe flex items-center gap-2 border-b border-foreground/30 pb-1 transition-colors hover:border-foreground"
-            >
-              View all <ArrowRight className="size-4" />
-            </Link>
-          </div>
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {products.slice(0, 4).map((p, i) => (
-              <Reveal key={p.slug} delay={i * 0.06}>
-                <ProductCard product={p} />
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ShopByCategory />
 
       <PromoTriptych />
 

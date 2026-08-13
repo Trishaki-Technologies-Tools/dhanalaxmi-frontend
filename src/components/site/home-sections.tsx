@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { categories, categoryImages } from "@/lib/catalog";
-import { Reveal } from "@/components/site/reveal";
+import { ArrowRight } from "lucide-react";
+import { categories, categoryImages, products, formatINR } from "@/lib/catalog";
+import { Reveal, SectionHeading } from "@/components/site/reveal";
+import { ProductCard } from "@/components/site/product-card";
 
 const promos = [
   {
@@ -104,5 +106,55 @@ export function PopularCategories() {
         </div>
       </div>
     </section>
+  );
+}
+
+const categoryOrder = ["bracelets", "chains", "rings", "earrings", "pendants"];
+
+export function ShopByCategory() {
+  const sections = categoryOrder
+    .map((slug) => {
+      const category = categories.find((c) => c.slug === slug);
+      const items = products.filter((p) => p.category === slug).slice(0, 4);
+      return { slug, category, items };
+    })
+    .filter((s) => s.category && s.items.length > 0);
+
+  return (
+    <div className="bg-background">
+      {sections.map(({ slug, category, items }, idx) => {
+        const isEven = idx % 2 === 0;
+        return (
+          <section
+            key={slug}
+            className={isEven ? "bg-background py-20 lg:py-28" : "bg-pearl py-20 lg:py-28"}
+          >
+            <div className="mx-auto max-w-[88rem] px-6 lg:px-10">
+              <div className="flex flex-wrap items-end justify-between gap-6">
+                <SectionHeading
+                  eyebrow="Shop by Category"
+                  title={category!.name}
+                  align="left"
+                />
+                <Link
+                  to="/shop"
+                  className="btn-luxe group flex items-center gap-2 rounded-full border border-foreground/15 bg-background px-6 py-2.5 text-sm transition-all hover:bg-foreground hover:text-primary-foreground"
+                >
+                  View more
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
+              <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {items.map((p, i) => (
+                  <Reveal key={p.slug} delay={i * 0.06}>
+                    <ProductCard product={p} />
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })}
+    </div>
   );
 }
