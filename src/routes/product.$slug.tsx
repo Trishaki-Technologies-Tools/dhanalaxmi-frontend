@@ -15,6 +15,7 @@ import { ProductCard } from "@/components/site/product-card";
 import { Reveal } from "@/components/site/reveal";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: ({ params }) => {
@@ -125,7 +126,11 @@ function ProductPage() {
 
             <div className="mt-10 flex flex-wrap gap-4">
               <button
-                onClick={() => toast.success(`${product.name} added to your bag.`)}
+                onClick={() => {
+                  add(product.slug);
+                  setOpen(true);
+                  toast.success(`${product.name} added to your bag.`);
+                }}
                 className="h-14 flex-1 rounded-full bg-primary px-8 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground shadow-luxe transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
               >
                 Add to bag
@@ -214,7 +219,10 @@ function ProductPage() {
           <p className="font-price text-xl">{formatINR(product.price)}</p>
         </div>
         <button
-          onClick={() => toast.success("Proceeding to secure checkout.")}
+          onClick={() => {
+            add(product.slug);
+            setOpen(true);
+          }}
           className="rounded-full bg-primary px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
         >
           Buy now
