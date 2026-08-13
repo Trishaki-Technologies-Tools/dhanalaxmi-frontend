@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { categories, categoryImages, products, formatINR } from "@/lib/catalog";
+import { categories, categoryImages, products, formatINR, type Category } from "@/lib/catalog";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
 import { ProductCard } from "@/components/site/product-card";
 
