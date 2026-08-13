@@ -128,12 +128,13 @@ export function CartDrawer() {
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     Free insured shipping · Inclusive of all taxes
                   </p>
-                  <button
-                    onClick={() => toast.success("Proceeding to secure checkout.")}
-                    className="mt-5 w-full rounded-full bg-primary py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
+                  <Link
+                    to="/checkout"
+                    onClick={() => setOpen(false)}
+                    className="mt-5 block w-full rounded-full bg-primary py-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
                   >
                     Checkout
-                  </button>
+                  </Link>
                   <button
                     onClick={() => {
                       clear();
