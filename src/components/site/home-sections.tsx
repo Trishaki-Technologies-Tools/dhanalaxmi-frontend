@@ -80,7 +80,7 @@ const popularOrder = ["earrings", "bracelets", "chains", "kada", "payal", "rings
 export function PopularCategories() {
   const items = popularOrder
     .map((slug) => categories.find((c) => c.slug === slug))
-    .filter(Boolean);
+    .filter((c): c is Category => Boolean(c));
   return (
     <section className="bg-background py-16 lg:py-20">
       <div className="mx-auto max-w-[92rem] px-6 lg:px-12">
