@@ -1,14 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { Home, LayoutGrid, Heart, ShoppingBag, MessageCircle } from "lucide-react";
+import { useCart } from "@/lib/cart";
 
 const items = [
   { label: "Home", to: "/", Icon: Home },
   { label: "Shop", to: "/shop", Icon: LayoutGrid },
   { label: "Wishlist", to: "/shop", Icon: Heart },
-  { label: "Bag", to: "/shop", Icon: ShoppingBag },
 ] as const;
 
 export function MobileDock() {
+  const { count, setOpen } = useCart();
   return (
     <>
       <a
@@ -30,6 +31,18 @@ export function MobileDock() {
             {label}
           </Link>
         ))}
+        <button
+          onClick={() => setOpen(true)}
+          className="relative flex flex-col items-center gap-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground"
+        >
+          <ShoppingBag className="size-[18px]" />
+          {count > 0 ? (
+            <span className="absolute -top-1 right-1 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
+              {count}
+            </span>
+          ) : null}
+          Bag
+        </button>
       </nav>
     </>
   );
