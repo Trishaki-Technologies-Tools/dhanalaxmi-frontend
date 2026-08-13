@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroCinematic from "@/assets/hero-cinematic.jpg";
-import editorialHands from "@/assets/editorial-hands.jpg";
+import heroEarrings from "@/assets/hero-earrings.jpg";
 import heroModel from "@/assets/hero-model.jpg";
 
 type Slide = {
