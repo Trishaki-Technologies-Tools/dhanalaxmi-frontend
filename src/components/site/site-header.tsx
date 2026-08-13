@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Menu, Search, Heart, ShoppingBag, User, X, ChevronDown } from "lucide-react";
 import { categories } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/lib/cart";
 
 const announcements = [
   "Complimentary insured shipping across India",
