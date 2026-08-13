@@ -82,7 +82,7 @@ export function HeroCarousel() {
           <img
             src={slide.image}
             alt={slide.alt}
-            className="relative size-full object-cover object-center lg:object-contain lg:object-right"
+            className="relative size-full object-cover lg:object-contain lg:object-right"
             width={1600}
             height={1000}
           />
