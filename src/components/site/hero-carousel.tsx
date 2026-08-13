@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroCinematic from "@/assets/hero-cinematic.jpg";
-import editorialHands from "@/assets/editorial-hands.jpg";
+import heroEarrings from "@/assets/hero-earrings.jpg";
 import heroModel from "@/assets/hero-model.jpg";
 
 type Slide = {
@@ -18,12 +18,12 @@ type Slide = {
 
 const slides: Slide[] = [
   {
-    image: editorialHands,
-    alt: "Hand wearing a sculptural hallmarked 925 sterling silver ring and bracelet",
-    eyebrow: "New Arrivals",
-    title: ["A Minimalistic", "Design In Silver"],
-    copy: "Awesome 925 hallmarked pieces for the dynamic urban lifestyle",
-    cta: "Shop Now",
+    image: heroEarrings,
+    alt: "Woman wearing an intricate hallmarked 925 sterling silver chandelier earring",
+    eyebrow: "Earring Edit",
+    title: ["Light That", "Moves With You"],
+    copy: "Our bestselling sterling silver earrings — filigree studs, jhumkas and drops, hallmarked at 92.5 purity.",
+    cta: "Shop Earrings",
     align: "left",
   },
   {
