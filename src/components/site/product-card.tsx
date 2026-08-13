@@ -9,7 +9,7 @@ export function ProductCard({ product }: { product: Product }) {
     <Link
       to="/product/$slug"
       params={{ slug: product.slug }}
-      className="group block overflow-hidden rounded-2xl border border-border bg-card transition-[transform,box-shadow,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-silver hover:shadow-luxe"
+      className="group block overflow-hidden rounded-xl border border-border bg-card transition-[transform,box-shadow,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-silver hover:shadow-luxe"
     >
       <div className="shine-sweep relative overflow-hidden bg-pearl">
         <img
@@ -33,25 +33,25 @@ export function ProductCard({ product }: { product: Product }) {
             <Eye className="size-3.5" />
           </span>
         </span>
-        <span className="btn-luxe absolute inset-x-3 bottom-3 flex translate-y-4 items-center justify-center gap-2 rounded-full bg-primary px-3 py-2.5 text-sm text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50">
-          <ShoppingBag className="size-3.5" /> Add to bag
+        <span className="btn-luxe absolute inset-x-2 bottom-2 flex translate-y-4 items-center justify-center gap-1.5 rounded-full bg-primary px-2 py-2 text-[11px] text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50">
+          <ShoppingBag className="size-3" /> Add to bag
         </span>
       </div>
-      <div className="space-y-1.5 p-4">
-        <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground">
+      <div className="space-y-1 p-3">
+        <p className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground">
           {product.categoryLabel}
         </p>
-        <h3 className="text-base leading-snug">{product.name}</h3>
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <Star className="size-3 fill-current text-foreground" />
+        <h3 className="line-clamp-1 text-sm leading-snug">{product.name}</h3>
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <Star className="size-2.5 fill-current text-foreground" />
           {product.rating.toFixed(1)} · {product.reviews} reviews
         </div>
-        <div className="flex items-baseline gap-2 pt-1">
-          <span className="font-price text-xl">{formatINR(product.price)}</span>
-          <span className="text-xs text-muted-foreground line-through">
+        <div className="flex flex-wrap items-baseline gap-1.5 pt-0.5">
+          <span className="font-price text-base">{formatINR(product.price)}</span>
+          <span className="text-[10px] text-muted-foreground line-through">
             {formatINR(product.mrp)}
           </span>
-          <span className="text-[10px] font-semibold text-silver-deep">{off}% off</span>
+          <span className="text-[9px] font-semibold text-silver-deep">{off}% off</span>
         </div>
       </div>
     </Link>
