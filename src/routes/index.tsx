@@ -17,7 +17,7 @@ import { categories, products } from "@/lib/catalog";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
 import { HeroCarousel } from "@/components/site/hero-carousel";
-import { PromoTriptych, PopularCategories } from "@/components/site/home-sections";
+import { PromoTriptych, PopularCategories, ShopByCategory } from "@/components/site/home-sections";
 
 export const Route = createFileRoute("/")({
   head: () => ({
