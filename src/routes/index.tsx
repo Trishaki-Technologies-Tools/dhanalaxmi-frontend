@@ -53,7 +53,7 @@ function EditorialCollections() {
           />
           <Link
             to="/collections"
-            className="btn-luxe flex items-center gap-2 border-b border-foreground/30 pb-1 transition-colors hover:border-foreground"
+            className="btn-luxe flex items-center gap-2 border-b border-maroon/30 pb-1 text-maroon transition-colors hover:border-maroon"
           >
             All collections <ArrowUpRight className="size-4" />
           </Link>
@@ -157,7 +157,7 @@ function Index() {
                   ["03", "Hand polish & hallmark", "Mirror lustre, BIS assayed and stamped."],
                 ].map(([n, t, c], i) => (
                   <Reveal key={n} delay={i * 0.1} className="flex gap-5 border-t border-border pt-5">
-                    <span className="font-price text-lg text-silver-deep">{n}</span>
+                    <span className="font-price text-lg text-maroon">{n}</span>
                     <div>
                       <p className="text-lg">{t}</p>
                       <p className="mt-1 text-sm text-muted-foreground">{c}</p>
@@ -199,8 +199,8 @@ function Index() {
             {whyCards.map(({ Icon, title, copy }, i) => (
               <Reveal key={title} delay={i * 0.08}>
                 <div className="luxe-card luxe-card-hover h-full bg-background p-7">
-                  <span className="flex size-12 items-center justify-center rounded-full bg-silver-tint">
-                    <Icon className="size-5" />
+                  <span className="flex size-12 items-center justify-center rounded-full bg-maroon-soft">
+                    <Icon className="size-5 text-maroon" />
                   </span>
                   <p className="mt-6 text-xl">{title}</p>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{copy}</p>
@@ -217,7 +217,7 @@ function Index() {
             <SectionHeading eyebrow="New Arrivals" title="Fresh from the atelier" align="left" />
             <Link
               to="/shop"
-              className="btn-luxe flex items-center gap-2 border-b border-foreground/30 pb-1 transition-colors hover:border-foreground"
+              className="btn-luxe flex items-center gap-2 border-b border-maroon/30 pb-1 text-maroon transition-colors hover:border-maroon"
             >
               Shop new <ArrowRight className="size-4" />
             </Link>
@@ -259,7 +259,7 @@ function Index() {
                   <Quote className="absolute -right-2 -top-4 size-24 text-silver/40" />
                   <div className="relative flex gap-1">
                     {Array.from({ length: 5 }).map((_, s) => (
-                      <Star key={s} className="size-3.5 fill-current text-foreground" />
+                      <Star key={s} className="size-3.5 fill-current text-maroon" />
                     ))}
                   </div>
                   <blockquote className="relative mt-6 font-display text-xl leading-relaxed">
@@ -281,7 +281,7 @@ function Index() {
       </section>
 
       <section className="mx-auto max-w-[88rem] px-6 pb-10 lg:px-10">
-        <Reveal className="grid overflow-hidden rounded-[1.75rem] bg-ink text-primary-foreground lg:grid-cols-2">
+        <Reveal className="grid overflow-hidden rounded-[1.75rem] bg-maroon-deep text-primary-foreground lg:grid-cols-2">
           <div className="relative min-h-[18rem]">
             <img
               src={craftImage}
@@ -310,15 +310,15 @@ function Index() {
                 required
                 placeholder="Your email address"
                 aria-label="Email address"
-                className="h-13 w-full rounded-full border border-primary-foreground/25 bg-transparent px-6 text-sm outline-none transition-colors placeholder:text-primary-foreground/50 focus:border-silver"
+                className="h-13 w-full rounded-full border border-primary-foreground/25 bg-transparent px-6 text-sm outline-none transition-colors placeholder:text-primary-foreground/50 focus:border-primary-foreground"
               />
-              <button className="btn-luxe shine-sweep flex h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-background px-8 text-foreground transition-colors hover:bg-silver">
+              <button className="btn-luxe shine-sweep flex h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-8 text-primary-foreground transition-colors hover:bg-maroon-deep">
                 Join <ArrowRight className="size-4" />
               </button>
             </form>
             <Link
               to="/contact"
-              className="btn-luxe mt-8 inline-flex items-center gap-2 border-b border-primary-foreground/30 pb-1 transition-colors hover:border-silver"
+              className="btn-luxe mt-8 inline-flex items-center gap-2 border-b border-primary-foreground/30 pb-1 transition-colors hover:border-primary-foreground"
             >
               Book a consultation <ArrowUpRight className="size-4" />
             </Link>
