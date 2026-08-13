@@ -22,7 +22,7 @@ const columns = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 bg-ink text-primary-foreground">
+    <footer className="mt-24 bg-maroon-deep text-primary-foreground">
       <div className="mx-auto max-w-[88rem] px-6 py-20 lg:px-10 lg:py-24">
         <div className="grid gap-14 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div className="max-w-sm">
@@ -40,7 +40,7 @@ export function SiteFooter() {
                   key={i}
                   href="#"
                   aria-label="Social link"
-                  className="flex size-10 items-center justify-center rounded-full border border-primary-foreground/20 transition-colors hover:border-silver hover:bg-silver hover:text-primary"
+                  className="flex size-10 items-center justify-center rounded-full border border-primary-foreground/20 transition-colors hover:border-primary-foreground hover:bg-primary-foreground hover:text-maroon"
                 >
                   <Icon className="size-4" />
                 </a>
@@ -56,7 +56,7 @@ export function SiteFooter() {
                   <li key={l}>
                     <Link
                       to={col.title === "Account" && l === "Sign In" ? "/login" : col.title === "Account" && l === "Create Account" ? "/signup" : "/shop"}
-                      className="opacity-65 transition-opacity hover:opacity-100"
+                      className="opacity-65 transition-all hover:text-silver hover:opacity-100"
                     >
                       {l}
                     </Link>
@@ -67,7 +67,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-16 hairline opacity-40" />
+        <div className="mt-16 h-px w-full bg-primary-foreground/20" />
 
         <div className="mt-10 flex flex-col gap-3 text-xs opacity-60 sm:flex-row sm:justify-between">
           <p>© {new Date().getFullYear()} Dhanalaxmi Jeweler&apos;s. All rights reserved.</p>
