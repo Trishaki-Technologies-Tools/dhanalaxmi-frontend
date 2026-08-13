@@ -35,6 +35,16 @@ import pPen3 from "@/assets/p-pendants-3.jpg";
 import pPen4 from "@/assets/p-pendants-4.jpg";
 import pPen5 from "@/assets/p-pendants-5.jpg";
 import pPen6 from "@/assets/p-pendants-6.jpg";
+import pKada1 from "@/assets/p-kada-1.jpg";
+import pKada2 from "@/assets/p-kada-2.jpg";
+import pKada3 from "@/assets/p-kada-3.jpg";
+import pKada4 from "@/assets/p-kada-4.jpg";
+import pKada5 from "@/assets/p-kada-5.jpg";
+import pPayal1 from "@/assets/p-payal-1.jpg";
+import pPayal2 from "@/assets/p-payal-2.jpg";
+import pPayal3 from "@/assets/p-payal-3.jpg";
+import pPayal4 from "@/assets/p-payal-4.jpg";
+import pPayal5 from "@/assets/p-payal-5.jpg";
 
 export const categoryImages = { rings, chains, earrings, bracelets, pendants, idols };
 
@@ -49,6 +59,8 @@ export const categories: Category[] = [
   { slug: "rings", name: "Silver Rings", tagline: "Hand-finished bands", image: rings },
   { slug: "chains", name: "Silver Chains", tagline: "Everyday heirlooms", image: chains },
   { slug: "bracelets", name: "Bracelets", tagline: "Sculpted for the wrist", image: bracelets },
+  { slug: "kada", name: "Kada", tagline: "Solid silver strength", image: pKada1 },
+  { slug: "payal", name: "Payal", tagline: "Anklets that sing", image: pPayal1 },
   { slug: "anklets", name: "Anklets", tagline: "Quiet movement", image: bracelets },
   { slug: "pendants", name: "Pendants", tagline: "Signature motifs", image: pendants },
   { slug: "earrings", name: "Earrings", tagline: "Light and luminous", image: earrings },
@@ -117,6 +129,18 @@ const base: Array<[string, string, string, number, number, string, number, strin
   // Other
   ["Laxmi Devotional Idol", "idols", "Silver Idols", 18900, 22500, idols, 96.0, "Gifting"],
   ["Anaya Rope Anklet", "anklets", "Anklets", 3990, 4800, bracelets, 12.6, "Festive"],
+  // Kada
+  ["Veer Classic Silver Kada", "kada", "Kada", 8990, 10800, pKada1, 42.5, "Everyday", "Bestseller"],
+  ["Shivaya Temple Kada", "kada", "Kada", 11900, 14200, pKada2, 56.2, "Temple", "Trending"],
+  ["Rudraksh Rope Kada", "kada", "Kada", 7490, 8900, pKada3, 34.8, "Everyday"],
+  ["Bhairav Hammered Kada", "kada", "Kada", 9890, 11800, pKada4, 46.4, "Festive", "New"],
+  ["Simha Tiger Kada", "kada", "Kada", 13900, 16500, pKada5, 62.0, "Wedding"],
+  // Payal
+  ["Ghungroo Bell Payal", "payal", "Payal", 5490, 6600, pPayal1, 24.6, "Festive", "Bestseller"],
+  ["Nitya Fine Chain Payal", "payal", "Payal", 3290, 3900, pPayal2, 11.8, "Everyday", "New"],
+  ["Meenal Oxidised Payal", "payal", "Payal", 4290, 5100, pPayal3, 16.4, "Festive"],
+  ["Vadhu Bridal Payal", "payal", "Payal", 8490, 10200, pPayal4, 32.5, "Wedding", "Trending"],
+  ["Tara Star Charm Payal", "payal", "Payal", 3990, 4700, pPayal5, 14.2, "Gifting"],
 ];
 
 export const products: Product[] = base.map(
