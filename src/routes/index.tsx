@@ -40,14 +40,6 @@ export const Route = createFileRoute("/")({
 });
 
 
-const marqueeWords = [
-  "Hallmarked 925",
-  "Hand Polished",
-  "Lifetime Care",
-  "Made In India",
-  "Insured Delivery",
-];
-
 function EditorialCollections() {
   const featured = categories.slice(0, 4);
   return (
