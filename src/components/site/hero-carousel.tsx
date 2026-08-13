@@ -131,6 +131,7 @@ export function HeroCarousel() {
           >
             <Link
               to="/shop"
+              search={slide.eyebrow === "Earring Edit" ? { category: "earrings" } : {}}
               className="btn-luxe shine-sweep inline-flex h-12 items-center border border-foreground px-9 text-sm uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-foreground hover:text-primary-foreground"
             >
               {slide.cta}
