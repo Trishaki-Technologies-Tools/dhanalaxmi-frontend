@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { categories, categoryImages, products, formatINR } from "@/lib/catalog";
+import { categories, categoryImages, products, formatINR, type Category } from "@/lib/catalog";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
 import { ProductCard } from "@/components/site/product-card";
 
@@ -75,8 +75,12 @@ export function PromoTriptych() {
   );
 }
 
+const popularOrder = ["earrings", "bracelets", "chains", "kada", "payal", "rings"];
+
 export function PopularCategories() {
-  const items = categories.slice(0, 6);
+  const items = popularOrder
+    .map((slug) => categories.find((c) => c.slug === slug))
+    .filter((c): c is Category => Boolean(c));
   return (
     <section className="bg-background py-16 lg:py-20">
       <div className="mx-auto max-w-[92rem] px-6 lg:px-12">
