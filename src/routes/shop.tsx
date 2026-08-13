@@ -1,12 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { LayoutGrid, List, SlidersHorizontal } from "lucide-react";
+import { LayoutGrid, List, SlidersHorizontal, X } from "lucide-react";
+import { z } from "zod";
 import { categories, products, formatINR } from "@/lib/catalog";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal } from "@/components/site/reveal";
 import { cn } from "@/lib/utils";
 
+const searchSchema = z.object({
+  category: z.string().optional(),
+});
+
 export const Route = createFileRoute("/shop")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Shop 925 Silver Jewelry — Dhanalaxmi Jeweler's" },
