@@ -150,6 +150,7 @@ export function ShopByCategory() {
                 />
                 <Link
                   to="/shop"
+                  search={{ category: slug }}
                   className="btn-luxe group flex items-center gap-2 rounded-full border border-foreground/15 bg-background px-6 py-2.5 text-sm transition-all hover:bg-foreground hover:text-primary-foreground"
                 >
                   View more
