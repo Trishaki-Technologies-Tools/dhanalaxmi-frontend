@@ -6,7 +6,6 @@ import {
   Gem,
   Headphones,
   ShieldCheck,
-  Sparkles,
   Star,
   Truck,
   Quote,
