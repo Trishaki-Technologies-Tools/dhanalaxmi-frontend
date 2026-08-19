@@ -109,7 +109,7 @@ function AccountPage() {
       address: a.address,
       city: a.city,
       pincode: a.pincode,
-      isDefault: a.isDefault,
+      isDefault: a.isDefault ?? false,
     });
     setShowForm(true);
   };
