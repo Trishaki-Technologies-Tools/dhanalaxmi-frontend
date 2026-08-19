@@ -34,6 +34,16 @@ export type Order = {
   subtotal?: number;
   codFee?: number;
   savings?: number;
+  /** Local lifecycle state. Defaults to "active" for older orders. */
+  status?: "active" | "cancelled";
+  cancelledAt?: number;
+  cancelReason?: string;
+  request?: {
+    type: "return" | "exchange";
+    reason: string;
+    at: number;
+    status: "requested";
+  };
 };
 
 export const orderStages = ["Confirmed", "Packed", "Shipped", "Out for delivery", "Delivered"] as const;
@@ -57,10 +67,29 @@ export function stageEtaFor(order: Order, index: number) {
 
 type OrdersContextValue = {
   orders: Order[];
+  allOrders: Order[];
   now: number;
   placeOrder: (input: Omit<Order, "id" | "createdAt" | "phone"> & { phone: string }) => Order;
   getOrder: (id: string) => Order | undefined;
+  updateOrder: (id: string, patch: Partial<Order>) => void;
+  cancelOrder: (id: string, reason: string) => void;
+  requestReturn: (id: string, type: "return" | "exchange", reason: string) => void;
+  findOrder: (id: string, contact: string) => Order | undefined;
 };
+
+/** Cancellation is only allowed before the parcel ships. */
+export function canCancel(order: Order, now: number) {
+  return (order.status ?? "active") === "active" && stageIndexFor(order, now) < 2;
+}
+
+/** Returns/exchanges open once delivered. */
+export function canReturn(order: Order, now: number) {
+  return (
+    (order.status ?? "active") === "active" &&
+    stageIndexFor(order, now) >= 4 &&
+    !order.request
+  );
+}
 
 const OrdersContext = createContext<OrdersContextValue | null>(null);
 const STORAGE_KEY = "dj-orders-v1";
@@ -115,9 +144,65 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
 
   const getOrder = useCallback((id: string) => orders.find((o) => o.id === id), [orders]);
 
+  const persist = useCallback((next: Order[]) => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+    return next;
+  }, []);
+
+  const updateOrder = useCallback<OrdersContextValue["updateOrder"]>(
+    (id, patch) => {
+      setAll((prev) => persist(prev.map((o) => (o.id === id ? { ...o, ...patch } : o))));
+    },
+    [persist],
+  );
+
+  const cancelOrder = useCallback(
+    (id: string, reason: string) => {
+      updateOrder(id, { status: "cancelled", cancelledAt: Date.now(), cancelReason: reason });
+    },
+    [updateOrder],
+  );
+
+  const requestReturn = useCallback(
+    (id: string, type: "return" | "exchange", reason: string) => {
+      updateOrder(id, { request: { type, reason, at: Date.now(), status: "requested" } });
+    },
+    [updateOrder],
+  );
+
+  const findOrder = useCallback(
+    (id: string, contact: string) => {
+      const key = contact.trim().toLowerCase();
+      const digits = key.replace(/\D/g, "").slice(-10);
+      return all.find((o) => {
+        if (o.id.toLowerCase() !== id.trim().toLowerCase()) return false;
+        const email = o.address?.email?.toLowerCase() ?? "";
+        const phones = [o.phone, o.address?.phone ?? ""].map((p) =>
+          p.replace(/\D/g, "").slice(-10),
+        );
+        return (digits.length === 10 && phones.includes(digits)) || (!!key && email === key);
+      });
+    },
+    [all],
+  );
+
   const value = useMemo(
-    () => ({ orders, now, placeOrder, getOrder }),
-    [orders, now, placeOrder, getOrder],
+    () => ({
+      orders,
+      allOrders: all,
+      now,
+      placeOrder,
+      getOrder,
+      updateOrder,
+      cancelOrder,
+      requestReturn,
+      findOrder,
+    }),
+    [orders, all, now, placeOrder, getOrder, updateOrder, cancelOrder, requestReturn, findOrder],
   );
   return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;
 }
