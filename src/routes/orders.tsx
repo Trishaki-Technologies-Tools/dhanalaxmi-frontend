@@ -1,8 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { CheckCircle2, Circle, Loader2, LogOut, Package, Phone, RefreshCw } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  Download,
+  Loader2,
+  LogOut,
+  Package,
+  Phone,
+  RefreshCw,
+  Repeat2,
+  UserRound,
+} from "lucide-react";
+import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
+import { useCart } from "@/lib/cart";
+import { downloadInvoice } from "@/lib/invoice";
 import { orderStages, stageEtaFor, stageIndexFor, useOrders } from "@/lib/orders";
 
 export const Route = createFileRoute("/orders")({
@@ -38,6 +52,7 @@ function formatTime(ts: number) {
 function OrdersPage() {
   const { isAuthenticated, hydrated, phone, signOut } = useAuth();
   const { orders, now } = useOrders();
+  const { add, setOpen } = useCart();
 
   if (!hydrated) {
     return (
