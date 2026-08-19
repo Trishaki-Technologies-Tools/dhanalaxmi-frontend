@@ -85,6 +85,9 @@ function CheckoutPage() {
     const buyerPhone = normalizePhone(String(form.get("phone") ?? ""));
     const city = String(form.get("city") ?? "");
     const name = String(form.get("name") ?? "");
+    const email = String(form.get("email") ?? "");
+    const address = String(form.get("address") ?? "");
+    const pincode = String(form.get("pincode") ?? "");
     setProcessing(true);
     // Demo payment authorisation — replace with the live payment provider session.
     setTimeout(() => {
@@ -95,6 +98,10 @@ function CheckoutPage() {
         method,
         paid: paid === "1",
         shipTo: [name, city].filter(Boolean).join(", "),
+        address: { name, email, phone: buyerPhone, address, city, pincode },
+        subtotal,
+        codFee,
+        savings,
         lines: items.map(({ product, qty }) => ({
           slug: product.slug,
           name: product.name,

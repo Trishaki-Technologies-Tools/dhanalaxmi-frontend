@@ -127,6 +127,13 @@ function OrdersPage() {
                     <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                       {order.paid ? "Paid" : "Pay on delivery"} · {order.method.toUpperCase()}
                     </p>
+                    <Link
+                      to="/order/$id"
+                      params={{ id: order.id }}
+                      className="mt-2 inline-block text-[11px] font-semibold uppercase tracking-[0.18em] text-maroon underline-offset-4 hover:underline"
+                    >
+                      View details
+                    </Link>
                   </div>
                 </div>
 
