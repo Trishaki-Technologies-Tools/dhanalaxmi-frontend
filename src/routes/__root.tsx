@@ -17,6 +17,8 @@ import { SiteFooter } from "../components/site/site-footer";
 import { MobileDock } from "../components/site/mobile-dock";
 import { Toaster } from "../components/ui/sonner";
 import { CartProvider } from "../lib/cart";
+import { AuthProvider } from "../lib/auth";
+import { OrdersProvider } from "../lib/orders";
 import { CartDrawer } from "../components/site/cart-drawer";
 
 function NotFoundComponent() {
@@ -140,6 +142,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+      <OrdersProvider>
       <CartProvider>
         <SiteHeader />
         <main className={isAuthPage ? "" : "pb-20 md:pb-0"}>
@@ -151,6 +155,8 @@ function RootComponent() {
         <CartDrawer />
         <Toaster />
       </CartProvider>
+      </OrdersProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

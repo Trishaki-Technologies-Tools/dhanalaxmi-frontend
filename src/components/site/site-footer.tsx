@@ -55,7 +55,15 @@ export function SiteFooter() {
                 {col.links.map((l) => (
                   <li key={l}>
                     <Link
-                      to={col.title === "Account" && l === "Sign In" ? "/login" : col.title === "Account" && l === "Create Account" ? "/signup" : "/shop"}
+                      to={
+                        l === "Sign In"
+                          ? "/login"
+                          : l === "Create Account"
+                            ? "/signup"
+                            : l === "Order History" || l === "Order Tracking"
+                              ? "/orders"
+                              : "/shop"
+                      }
                       className="opacity-65 transition-all hover:text-silver hover:opacity-100"
                     >
                       {l}

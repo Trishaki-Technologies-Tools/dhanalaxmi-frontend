@@ -14,6 +14,8 @@ import {
 import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { useAuth, normalizePhone } from "@/lib/auth";
+import { useOrders } from "@/lib/orders";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -49,16 +51,15 @@ const inputClass =
 
 function CheckoutPage() {
   const { items, subtotal, savings, clear } = useCart();
+  const { phone: authPhone } = useAuth();
+  const { placeOrder } = useOrders();
   const navigate = useNavigate();
   const [method, setMethod] = useState<PayMethod>("upi");
   const [processing, setProcessing] = useState(false);
 
   const codFee = method === "cod" ? 100 : 0;
   const total = subtotal + codFee;
-  const orderId = useMemo(
-    () => `DJ${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
-    [],
-  );
+  const initialPhone = useMemo(() => authPhone ?? "", [authPhone]);
 
   if (items.length === 0) {
     return (
@@ -80,15 +81,33 @@ function CheckoutPage() {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const buyerPhone = normalizePhone(String(form.get("phone") ?? ""));
+    const city = String(form.get("city") ?? "");
+    const name = String(form.get("name") ?? "");
     setProcessing(true);
     // Demo payment authorisation — replace with the live payment provider session.
     setTimeout(() => {
       const paid = method === "cod" ? "0" : "1";
+      const order = placeOrder({
+        phone: authPhone ?? buyerPhone,
+        total,
+        method,
+        paid: paid === "1",
+        shipTo: [name, city].filter(Boolean).join(", "),
+        lines: items.map(({ product, qty }) => ({
+          slug: product.slug,
+          name: product.name,
+          image: product.image,
+          qty,
+          price: product.price,
+        })),
+      });
       clear();
       toast.success("Order placed — a confirmation is on its way.");
       navigate({
         to: "/order-confirmed",
-        search: { order: orderId, total: String(total), paid, method },
+        search: { order: order.id, total: String(total), paid, method },
       });
     }, 1400);
   };
@@ -127,6 +146,7 @@ function CheckoutPage() {
                     name={f.name}
                     type={f.type}
                     required
+                    defaultValue={f.name === "phone" ? initialPhone : undefined}
                     className={inputClass}
                   />
                 </div>
