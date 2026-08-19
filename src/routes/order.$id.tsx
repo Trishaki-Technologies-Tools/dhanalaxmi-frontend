@@ -315,7 +315,9 @@ function OrderDetailPage() {
           </div>
 
           <div className="luxe-card p-6 sm:p-8">
-            <h2 className="font-display text-2xl">Status · {orderStages[active]}</h2>
+            <h2 className="font-display text-2xl">
+              Status · {order.status === "cancelled" ? "Cancelled" : orderStages[active]}
+            </h2>
             <ol className="mt-6 space-y-4">
               {orderStages.map((stage, idx) => {
                 const done = idx <= active;
