@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -16,6 +16,7 @@ import { formatINR } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { useAuth, normalizePhone } from "@/lib/auth";
 import { useOrders } from "@/lib/orders";
+import { useProfile } from "@/lib/profile";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -53,13 +54,28 @@ function CheckoutPage() {
   const { items, subtotal, savings, clear } = useCart();
   const { phone: authPhone } = useAuth();
   const { placeOrder } = useOrders();
+  const { profile, addresses, defaultAddress, addAddress } = useProfile();
   const navigate = useNavigate();
   const [method, setMethod] = useState<PayMethod>("upi");
   const [processing, setProcessing] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedId(defaultAddress?.id ?? null);
+  }, [defaultAddress?.id]);
 
   const codFee = method === "cod" ? 100 : 0;
   const total = subtotal + codFee;
   const initialPhone = useMemo(() => authPhone ?? "", [authPhone]);
+  const selected = addresses.find((a) => a.id === selectedId);
+  const defaults = {
+    name: selected?.name ?? profile.name ?? "",
+    email: profile.email ?? "",
+    phone: selected?.phone ?? initialPhone,
+    address: selected?.address ?? "",
+    city: selected?.city ?? "",
+    pincode: selected?.pincode ?? "",
+  };
 
   if (items.length === 0) {
     return (
@@ -88,6 +104,9 @@ function CheckoutPage() {
     const email = String(form.get("email") ?? "");
     const address = String(form.get("address") ?? "");
     const pincode = String(form.get("pincode") ?? "");
+    if (form.get("saveAddress") === "on") {
+      addAddress({ label: "Saved at checkout", name, phone: buyerPhone, address, city, pincode });
+    }
     setProcessing(true);
     // Demo payment authorisation — replace with the live payment provider session.
     setTimeout(() => {
