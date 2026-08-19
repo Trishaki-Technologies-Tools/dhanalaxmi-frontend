@@ -146,6 +146,7 @@ function CheckoutPage() {
                     name={f.name}
                     type={f.type}
                     required
+                    defaultValue={f.name === "phone" ? initialPhone : undefined}
                     className={inputClass}
                   />
                 </div>
