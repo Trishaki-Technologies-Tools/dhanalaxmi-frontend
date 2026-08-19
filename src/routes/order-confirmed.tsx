@@ -78,8 +78,14 @@ function OrderConfirmedPage() {
 
       <div className="mt-12 flex flex-wrap justify-center gap-3">
         <Link
-          to="/shop"
+          to="/orders"
           className="rounded-full bg-primary px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
+        >
+          Track my order
+        </Link>
+        <Link
+          to="/shop"
+          className="rounded-full border border-maroon/30 px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-maroon transition-colors hover:bg-maroon-soft"
         >
           Continue shopping
         </Link>
