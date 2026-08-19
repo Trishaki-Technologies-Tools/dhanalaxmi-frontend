@@ -20,6 +20,7 @@ import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as TrackRouteImport } from './routes/track'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 
@@ -78,6 +79,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrderIdRoute = OrderIdRouteImport.update({
   id: '/order/$id',
   path: '/order/$id',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/track': typeof TrackRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
 }
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/track': typeof TrackRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
 }
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/track': typeof TrackRoute
   '/order/$id': typeof OrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
 }
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/track'
     | '/order/$id'
     | '/product/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/track'
     | '/order/$id'
     | '/product/$slug'
   id:
@@ -179,6 +190,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/track'
     | '/order/$id'
     | '/product/$slug'
   fileRoutesById: FileRoutesById
@@ -195,6 +207,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
+  TrackRoute: typeof TrackRoute
   OrderIdRoute: typeof OrderIdRoute
   ProductSlugRoute: typeof ProductSlugRoute
 }
@@ -278,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order/$id': {
       id: '/order/$id'
       path: '/order/$id'
@@ -307,6 +327,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
+  TrackRoute: TrackRoute,
   OrderIdRoute: OrderIdRoute,
   ProductSlugRoute: ProductSlugRoute,
 }
