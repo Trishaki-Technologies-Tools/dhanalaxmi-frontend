@@ -212,9 +212,13 @@ function OrdersPage() {
                   ))}
                 </div>
 
-                <div className="mt-7 rounded-2xl bg-maroon-soft/60 p-5">
+                <div
+                  className={`mt-7 rounded-2xl bg-maroon-soft/60 p-5 ${
+                    order.status === "cancelled" ? "opacity-50" : ""
+                  }`}
+                >
                   <p className="text-eyebrow text-maroon">
-                    Status · {orderStages[active]}
+                    Status · {order.status === "cancelled" ? "Cancelled" : orderStages[active]}
                   </p>
                   <ol className="mt-5 grid gap-4 sm:grid-cols-5">
                     {orderStages.map((stage, idx) => {
