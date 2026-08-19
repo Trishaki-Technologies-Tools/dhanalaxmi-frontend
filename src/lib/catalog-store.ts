@@ -19,7 +19,7 @@ export type Banner = {
   titleBottom: string;
   copy: string;
   cta: string;
-  category?: string;
+  category?: string | undefined;
   active: boolean;
 };
 
@@ -31,7 +31,7 @@ export type PromoTile = {
   cta: string;
   image: string;
   dark: boolean;
-  category?: string;
+  category?: string | undefined;
 };
 
 export type StoreSettings = {
