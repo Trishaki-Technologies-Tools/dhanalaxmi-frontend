@@ -20,6 +20,8 @@ import { CartProvider } from "../lib/cart";
 import { AuthProvider } from "../lib/auth";
 import { OrdersProvider } from "../lib/orders";
 import { ProfileProvider } from "../lib/profile";
+import { AdminProvider } from "../lib/admin";
+import { hydrateCatalog } from "../lib/catalog-store";
 import { CartDrawer } from "../components/site/cart-drawer";
 
 function NotFoundComponent() {
@@ -140,25 +142,33 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isAdminPage = pathname.startsWith("/admin");
+  const bare = isAuthPage || isAdminPage;
+
+  useEffect(() => {
+    hydrateCatalog();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+      <AdminProvider>
       <ProfileProvider>
       <OrdersProvider>
       <CartProvider>
-        <SiteHeader />
-        <main className={isAuthPage ? "" : "pb-20 md:pb-0"}>
+        {!isAdminPage && <SiteHeader />}
+        <main className={bare ? "" : "pb-20 md:pb-0"}>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>
-        {!isAuthPage && <SiteFooter />}
-        {!isAuthPage && <MobileDock />}
+        {!bare && <SiteFooter />}
+        {!bare && <MobileDock />}
         <CartDrawer />
         <Toaster />
       </CartProvider>
       </OrdersProvider>
       </ProfileProvider>
+      </AdminProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
