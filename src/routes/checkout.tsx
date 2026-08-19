@@ -17,6 +17,7 @@ import { useCart } from "@/lib/cart";
 import { useAuth, normalizePhone } from "@/lib/auth";
 import { useOrders } from "@/lib/orders";
 import { useProfile } from "@/lib/profile";
+import { useCatalog } from "@/lib/catalog-store";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
