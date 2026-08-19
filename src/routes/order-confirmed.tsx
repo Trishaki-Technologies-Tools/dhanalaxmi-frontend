@@ -78,10 +78,11 @@ function OrderConfirmedPage() {
 
       <div className="mt-12 flex flex-wrap justify-center gap-3">
         <Link
-          to="/orders"
+          to="/order/$id"
+          params={{ id: order }}
           className="rounded-full bg-primary px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
         >
-          Track my order
+          View order details
         </Link>
         <Link
           to="/shop"
