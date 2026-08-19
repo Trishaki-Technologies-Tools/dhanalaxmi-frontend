@@ -361,6 +361,17 @@ export function SiteHeader() {
                   </Link>
                 </li>
               ))}
+              {accountLinks.map(({ label, to }) => (
+                <li key={label} className="border-t border-border/70">
+                  <Link
+                    to={to}
+                    onClick={() => setMobile(false)}
+                    className="block py-4 text-sm uppercase tracking-[0.2em] text-maroon"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </motion.div>
         ) : null}
