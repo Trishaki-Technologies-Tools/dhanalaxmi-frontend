@@ -1,43 +1,25 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { categories, categoryImages, products, formatINR, type Category } from "@/lib/catalog";
+import type { Category } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
 import { ProductCard } from "@/components/site/product-card";
 
-const promos = [
-  {
-    eyebrow: "2026 Fashion",
-    title: ["Just Launched", "Temple Edit"],
-    cta: "See More",
-    image: categoryImages.idols,
-    dark: false,
-  },
-  {
-    eyebrow: "Flat Discount",
-    title: ["Necklaces &", "Body Jewels"],
-    cta: "Shop Now",
-    image: categoryImages.chains,
-    dark: false,
-  },
-  {
-    eyebrow: "New Collection",
-    title: ["Jewelry &", "Charm Rings"],
-    cta: "Shop Now",
-    image: categoryImages.rings,
-    dark: true,
-  },
-];
-
 export function PromoTriptych() {
+  const { promos } = useCatalog();
   return (
     <section className="bg-background py-12 lg:py-16">
       <div className="mx-auto grid max-w-[92rem] gap-6 px-6 md:grid-cols-3 lg:px-12">
         {promos.map((p, i) => (
-          <Reveal key={p.eyebrow} delay={i * 0.08}>
-            <Link to="/shop" className="group relative block h-full overflow-hidden">
+          <Reveal key={p.id} delay={i * 0.08}>
+            <Link
+              to="/shop"
+              search={p.category ? { category: p.category } : {}}
+              className="group relative block h-full overflow-hidden"
+            >
               <img
                 src={p.image}
-                alt={p.title.join(" ")}
+                alt={`${p.titleTop} ${p.titleBottom}`}
                 loading="lazy"
                 width={900}
                 height={700}
@@ -57,7 +39,7 @@ export function PromoTriptych() {
               >
                 <p className="text-[10px] uppercase tracking-[0.28em] opacity-70">{p.eyebrow}</p>
                 <p className="mt-3 text-2xl font-light leading-tight">
-                  {p.title.map((l) => (
+                  {[p.titleTop, p.titleBottom].filter(Boolean).map((l) => (
                     <span key={l} className="block">
                       {l}
                     </span>
@@ -75,10 +57,9 @@ export function PromoTriptych() {
   );
 }
 
-const popularOrder = ["earrings", "bracelets", "chains", "kada", "payal", "rings"];
-
 export function PopularCategories() {
-  const items = popularOrder
+  const { categories, settings } = useCatalog();
+  const items = settings.popularCategories
     .map((slug) => categories.find((c) => c.slug === slug))
     .filter((c): c is Category => Boolean(c));
   return (
@@ -90,7 +71,11 @@ export function PopularCategories() {
         <div className="mt-12 grid grid-cols-3 gap-8 lg:grid-cols-6">
           {items.map((c, i) => (
             <Reveal key={c.slug} delay={i * 0.06}>
-              <Link to="/shop" className="group flex flex-col items-center gap-5">
+              <Link
+                to="/shop"
+                search={{ category: c.slug }}
+                className="group flex flex-col items-center gap-5"
+              >
                 <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-full bg-mist">
                   <img
                     src={c.image}
@@ -113,18 +98,9 @@ export function PopularCategories() {
   );
 }
 
-const categoryOrder = [
-  "earrings",
-  "bracelets",
-  "chains",
-  "kada",
-  "payal",
-  "rings",
-  "pendants",
-];
-
 export function ShopByCategory() {
-  const sections = categoryOrder
+  const { categories, products, settings } = useCatalog();
+  const sections = settings.homeCategoryOrder
     .map((slug) => {
       const category = categories.find((c) => c.slug === slug);
       const items = products.filter((p) => p.category === slug).slice(0, 5);
