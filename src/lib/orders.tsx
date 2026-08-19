@@ -11,6 +11,15 @@ import { useAuth } from "@/lib/auth";
 
 export type OrderLine = { slug: string; name: string; image: string; qty: number; price: number };
 
+export type OrderAddress = {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  pincode: string;
+};
+
 export type Order = {
   id: string;
   phone: string;
@@ -20,6 +29,11 @@ export type Order = {
   paid: boolean;
   lines: OrderLine[];
   shipTo: string;
+  /** Optional on orders placed before the details page shipped. */
+  address?: OrderAddress;
+  subtotal?: number;
+  codFee?: number;
+  savings?: number;
 };
 
 export const orderStages = ["Confirmed", "Packed", "Shipped", "Out for delivery", "Delivered"] as const;
@@ -45,6 +59,7 @@ type OrdersContextValue = {
   orders: Order[];
   now: number;
   placeOrder: (input: Omit<Order, "id" | "createdAt" | "phone"> & { phone: string }) => Order;
+  getOrder: (id: string) => Order | undefined;
 };
 
 const OrdersContext = createContext<OrdersContextValue | null>(null);
@@ -98,7 +113,12 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     [all, phone],
   );
 
-  const value = useMemo(() => ({ orders, now, placeOrder }), [orders, now, placeOrder]);
+  const getOrder = useCallback((id: string) => orders.find((o) => o.id === id), [orders]);
+
+  const value = useMemo(
+    () => ({ orders, now, placeOrder, getOrder }),
+    [orders, now, placeOrder, getOrder],
+  );
   return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;
 }
 
