@@ -1,10 +1,24 @@
-import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, Search, Heart, ShoppingBag, User, X, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  Search,
+  Heart,
+  ShoppingBag,
+  User,
+  X,
+  ChevronDown,
+  Package,
+  MapPin,
+  Truck,
+  LogOut,
+  UserRound,
+} from "lucide-react";
 import { categories } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 const announcements = [
   "Complimentary insured shipping across India",
@@ -49,7 +63,13 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [mega, setMega] = useState(false);
   const [mobile, setMobile] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [account, setAccount] = useState(false);
   const { count, setOpen } = useCart();
+  const { isAuthenticated, phone, signOut } = useAuth();
+  const navigate = useNavigate();
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -57,6 +77,31 @@ export function SiteHeader() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (searchOpen) searchRef.current?.focus();
+  }, [searchOpen]);
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    setSearchOpen(false);
+    navigate({ to: "/search", search: { q } });
+  };
+
+  const accountLinks = isAuthenticated
+    ? ([
+        { label: "My profile", to: "/account", Icon: UserRound },
+        { label: "Address book", to: "/account", Icon: MapPin },
+        { label: "Order history", to: "/orders", Icon: Package },
+        { label: "Track order", to: "/track", Icon: Truck },
+      ] as const)
+    : ([
+        { label: "Sign in", to: "/login", Icon: UserRound },
+        { label: "Create account", to: "/signup", Icon: User },
+        { label: "Track order", to: "/track", Icon: Truck },
+      ] as const);
 
   return (
     <header className="sticky top-0 z-50">
@@ -109,7 +154,11 @@ export function SiteHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-5 lg:ml-0">
-            <button aria-label="Search" className="transition-opacity hover:opacity-60">
+            <button
+              aria-label="Search"
+              onClick={() => setSearchOpen((v) => !v)}
+              className="transition-opacity hover:opacity-60"
+            >
               <Search className="size-[18px]" />
             </button>
             <Link
@@ -119,13 +168,62 @@ export function SiteHeader() {
             >
               <Heart className="size-[18px]" />
             </Link>
-            <Link
-              to="/orders"
-              aria-label="Account"
-              className="hidden transition-opacity hover:opacity-60 sm:block"
+            <div
+              className="relative hidden sm:block"
+              onMouseEnter={() => setAccount(true)}
+              onMouseLeave={() => setAccount(false)}
             >
-              <User className="size-[18px]" />
-            </Link>
+              <button
+                aria-label="Account"
+                aria-expanded={account}
+                onClick={() => setAccount((v) => !v)}
+                className="flex items-center gap-1 transition-opacity hover:opacity-60"
+              >
+                <User className="size-[18px]" />
+                <ChevronDown className="size-3" />
+              </button>
+              <AnimatePresence>
+                {account ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.22 }}
+                    className="absolute right-0 top-full z-50 w-60 overflow-hidden rounded-2xl border border-border bg-background pt-1 text-foreground shadow-luxe"
+                  >
+                    <p className="px-5 pb-2 pt-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {isAuthenticated ? `+91 ${phone}` : "My account"}
+                    </p>
+                    <ul className="pb-2">
+                      {accountLinks.map(({ label, to, Icon }) => (
+                        <li key={label}>
+                          <Link
+                            to={to}
+                            onClick={() => setAccount(false)}
+                            className="flex items-center gap-3 px-5 py-3 text-sm transition-colors hover:bg-maroon-soft hover:text-maroon"
+                          >
+                            <Icon className="size-4 text-maroon" /> {label}
+                          </Link>
+                        </li>
+                      ))}
+                      {isAuthenticated ? (
+                        <li className="border-t border-border">
+                          <button
+                            onClick={() => {
+                              signOut();
+                              setAccount(false);
+                            }}
+                            className="flex w-full items-center gap-3 px-5 py-3 text-sm transition-colors hover:bg-maroon-soft hover:text-maroon"
+                          >
+                            <LogOut className="size-4 text-maroon" /> Sign out
+                          </button>
+                        </li>
+                      ) : null}
+                    </ul>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
             <button
               aria-label="Cart"
               onClick={() => setOpen(true)}
@@ -140,6 +238,41 @@ export function SiteHeader() {
             </button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {searchOpen ? (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden border-t border-primary-foreground/15 bg-primary"
+            >
+              <form
+                onSubmit={submitSearch}
+                className="mx-auto flex max-w-[88rem] items-center gap-3 px-6 py-4 lg:px-10"
+              >
+                <Search className="size-4 text-silver" />
+                <input
+                  ref={searchRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search earrings, kada, payal, chains…"
+                  aria-label="Search products"
+                  className="flex-1 bg-transparent py-2 text-sm text-primary-foreground placeholder:text-primary-foreground/50 outline-none"
+                />
+                <button
+                  type="submit"
+                  className="rounded-full bg-primary-foreground px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-maroon"
+                >
+                  Search
+                </button>
+                <button type="button" aria-label="Close search" onClick={() => setSearchOpen(false)}>
+                  <X className="size-4" />
+                </button>
+              </form>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
         <AnimatePresence>
           {mega ? (
