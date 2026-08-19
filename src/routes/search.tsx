@@ -3,7 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { Search as SearchIcon, SlidersHorizontal, X } from "lucide-react";
-import { categories, formatINR, products } from "@/lib/catalog";
+import { formatINR } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal } from "@/components/site/reveal";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ function score(text: string, terms: string[]) {
 }
 
 function SearchPage() {
+  const { categories, products } = useCatalog();
   const { q } = Route.useSearch();
   const navigate = useNavigate({ from: "/search" });
   const [draft, setDraft] = useState(q);
@@ -81,7 +83,7 @@ function SearchPage() {
     else matched.sort((a, b) => b.relevance - a.relevance || b.product.popularity - a.product.popularity);
 
     return matched.map((m) => m.product);
-  }, [terms, maxPrice, cats, occ, sort]);
+  }, [products, terms, maxPrice, cats, occ, sort]);
 
   const toggle = (list: string[], value: string, set: (v: string[]) => void) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
