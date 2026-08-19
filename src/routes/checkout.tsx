@@ -154,7 +154,46 @@ function CheckoutPage() {
         <div className="space-y-8">
           <section className="luxe-card p-7 sm:p-9">
             <h2 className="font-display text-2xl">Shipping details</h2>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            {addresses.length > 0 ? (
+              <div className="mt-6">
+                <p className="text-eyebrow">Saved addresses</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {addresses.map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => setSelectedId(a.id)}
+                      className={`rounded-2xl border p-4 text-left text-sm transition-colors ${
+                        selectedId === a.id
+                          ? "border-maroon bg-maroon-soft text-maroon"
+                          : "border-border hover:border-maroon/40"
+                      }`}
+                    >
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">
+                        {a.label || "Address"}
+                      </p>
+                      <p className="mt-2">{a.name}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {a.address}, {a.city} {a.pincode}
+                      </p>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(null)}
+                    className={`rounded-2xl border p-4 text-left text-sm transition-colors ${
+                      selectedId === null
+                        ? "border-maroon bg-maroon-soft text-maroon"
+                        : "border-border hover:border-maroon/40"
+                    }`}
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">New</p>
+                    <p className="mt-2">Use a different address</p>
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            <div key={selectedId ?? "new"} className="mt-6 grid gap-5 sm:grid-cols-2">
               {[
                 { name: "name", label: "Full name", type: "text", span: true },
                 { name: "email", label: "Email", type: "email" },
@@ -172,12 +211,16 @@ function CheckoutPage() {
                     name={f.name}
                     type={f.type}
                     required
-                    defaultValue={f.name === "phone" ? initialPhone : undefined}
+                    defaultValue={defaults[f.name as keyof typeof defaults]}
                     className={inputClass}
                   />
                 </div>
               ))}
             </div>
+            <label className="mt-5 flex cursor-pointer items-center gap-3 text-sm text-muted-foreground">
+              <input type="checkbox" name="saveAddress" className="size-4 accent-primary" />
+              Save this address to my address book
+            </label>
           </section>
 
           <section className="luxe-card p-7 sm:p-9">
