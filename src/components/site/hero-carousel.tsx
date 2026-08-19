@@ -2,64 +2,26 @@ import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import heroCinematic from "@/assets/hero-cinematic.jpg";
-import heroEarrings from "@/assets/hero-earrings.jpg";
-import heroModel from "@/assets/hero-model.jpg";
-
-type Slide = {
-  image: string;
-  alt: string;
-  eyebrow: string;
-  title: string[];
-  copy: string;
-  cta: string;
-  align: "left" | "right";
-};
-
-const slides: Slide[] = [
-  {
-    image: heroEarrings,
-    alt: "Woman wearing an intricate hallmarked 925 sterling silver chandelier earring",
-    eyebrow: "Earring Edit",
-    title: ["Light That", "Moves With You"],
-    copy: "Our bestselling sterling silver earrings — filigree studs, jhumkas and drops, hallmarked at 92.5 purity.",
-    cta: "Shop Earrings",
-    align: "left",
-  },
-  {
-    image: heroCinematic,
-    alt: "Model wearing layered sterling silver necklaces",
-    eyebrow: "The Silver Edit",
-    title: ["Crafted In Silver.", "Designed Forever."],
-    copy: "Hand-finished heirlooms across fourteen stations, assayed at 92.5 purity",
-    cta: "Explore Collection",
-    align: "left",
-  },
-  {
-    image: heroModel,
-    alt: "Portrait of a model wearing silver earrings and pendant",
-    eyebrow: "Festive Season",
-    title: ["Timeless Pieces,", "Everyday Luxury"],
-    copy: "Free insured shipping, lifetime polish and certified hallmark on every order",
-    cta: "Shop The Edit",
-    align: "left",
-  },
-];
+import { useCatalog } from "@/lib/catalog-store";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function HeroCarousel() {
+  const { banners } = useCatalog();
+  const slides = banners.filter((b) => b.active);
   const [index, setIndex] = useState(0);
   const go = useCallback((dir: number) => {
-    setIndex((i) => (i + dir + slides.length) % slides.length);
-  }, []);
+    setIndex((i) => (slides.length ? (i + dir + slides.length) % slides.length : 0));
+  }, [slides.length]);
 
   useEffect(() => {
+    if (slides.length < 2) return;
     const id = window.setInterval(() => go(1), 6000);
     return () => window.clearInterval(id);
-  }, [go]);
+  }, [go, slides.length]);
 
-  const slide = slides[index]!;
+  const slide = slides[index] ?? slides[0];
+  if (!slide) return null;
 
   return (
     <section className="relative isolate h-[70vh] min-h-[26rem] w-full overflow-hidden bg-mist sm:h-[78vh]">
@@ -80,20 +42,13 @@ export function HeroCarousel() {
             height={1000}
           />
           <div
-            className={`absolute inset-0 ${
-              slide.align === "left"
-                ? "bg-linear-to-r from-background/95 via-background/60 to-transparent"
-                : "bg-linear-to-l from-background/95 via-background/60 to-transparent"
-            }`}
+            className="absolute inset-0 bg-linear-to-r from-background/95 via-background/60 to-transparent"
           />
         </motion.div>
       </AnimatePresence>
 
       <div className="relative mx-auto flex h-full max-w-[92rem] items-center px-6 lg:px-12">
-        <div
-          className={`max-w-xl ${slide.align === "right" ? "ml-auto text-right" : ""}`}
-          key={`copy-${index}`}
-        >
+        <div className="max-w-xl" key={`copy-${index}`}>
           <motion.p
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -103,7 +58,7 @@ export function HeroCarousel() {
             {slide.eyebrow}
           </motion.p>
           <h1 className="mt-5 text-4xl font-light leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {slide.title.map((line, i) => (
+            {[slide.titleTop, slide.titleBottom].filter(Boolean).map((line, i) => (
               <motion.span
                 key={line}
                 initial={{ opacity: 0, y: 26 }}
@@ -131,7 +86,7 @@ export function HeroCarousel() {
           >
             <Link
               to="/shop"
-              search={slide.eyebrow === "Earring Edit" ? { category: "earrings" } : {}}
+              search={slide.category ? { category: slide.category } : {}}
               className="btn-luxe shine-sweep inline-flex h-12 items-center border border-maroon px-9 text-sm uppercase tracking-[0.18em] text-maroon transition-colors hover:bg-maroon hover:text-primary-foreground"
             >
               {slide.cta}
@@ -158,7 +113,7 @@ export function HeroCarousel() {
       <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5">
         {slides.map((s, i) => (
           <button
-            key={s.eyebrow}
+            key={s.id}
             aria-label={`Go to slide ${i + 1}`}
             onClick={() => setIndex(i)}
             className={`size-2 rounded-full transition-all ${
