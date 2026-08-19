@@ -101,6 +101,12 @@ function OrdersPage() {
           >
             <LogOut className="size-3.5" /> Sign out
           </button>
+          <Link
+            to="/account"
+            className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors hover:border-maroon hover:text-maroon"
+          >
+            <UserRound className="size-3.5" /> Profile
+          </Link>
         </div>
       </div>
 
@@ -150,6 +156,42 @@ function OrdersPage() {
                       View details
                     </Link>
                   </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  <button
+                    onClick={() => {
+                      order.lines.forEach((l) => add(l.slug, l.qty));
+                      setOpen(true);
+                      toast.success("Items added to your bag");
+                    }}
+                    className="flex items-center gap-2 rounded-full border border-maroon/30 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-maroon transition-colors hover:bg-maroon-soft"
+                  >
+                    <Repeat2 className="size-3.5" /> Reorder
+                  </button>
+                  <button
+                    onClick={() => downloadInvoice(order)}
+                    className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:border-maroon hover:text-maroon"
+                  >
+                    <Download className="size-3.5" /> Invoice
+                  </button>
+                  <Link
+                    to="/order/$id"
+                    params={{ id: order.id }}
+                    className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:border-maroon hover:text-maroon"
+                  >
+                    Cancel · return · exchange
+                  </Link>
+                  {order.status === "cancelled" ? (
+                    <span className="rounded-full bg-maroon px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
+                      Cancelled
+                    </span>
+                  ) : null}
+                  {order.request ? (
+                    <span className="rounded-full bg-maroon-soft px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-maroon">
+                      {order.request.type} requested
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="mt-5 space-y-3">
