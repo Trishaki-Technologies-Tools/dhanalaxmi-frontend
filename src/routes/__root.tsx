@@ -19,6 +19,7 @@ import { Toaster } from "../components/ui/sonner";
 import { CartProvider } from "../lib/cart";
 import { AuthProvider } from "../lib/auth";
 import { OrdersProvider } from "../lib/orders";
+import { ProfileProvider } from "../lib/profile";
 import { CartDrawer } from "../components/site/cart-drawer";
 
 function NotFoundComponent() {
@@ -143,6 +144,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+      <ProfileProvider>
       <OrdersProvider>
       <CartProvider>
         <SiteHeader />
@@ -156,6 +158,7 @@ function RootComponent() {
         <Toaster />
       </CartProvider>
       </OrdersProvider>
+      </ProfileProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

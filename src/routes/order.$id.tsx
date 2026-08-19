@@ -1,19 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { motion } from "motion/react";
 import {
   ArrowLeft,
   BadgeCheck,
   CheckCircle2,
   Circle,
+  Download,
   Loader2,
   MapPin,
   Package,
   Phone,
+  RotateCcw,
+  Repeat2,
   Truck,
+  XCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
-import { orderStages, stageEtaFor, stageIndexFor, useOrders } from "@/lib/orders";
+import { useCart } from "@/lib/cart";
+import { downloadInvoice } from "@/lib/invoice";
+import {
+  canCancel,
+  canReturn,
+  orderStages,
+  stageEtaFor,
+  stageIndexFor,
+  useOrders,
+} from "@/lib/orders";
 
 export const Route = createFileRoute("/order/$id")({
   head: () => ({
@@ -52,7 +67,10 @@ function Shell({ children }: { children: React.ReactNode }) {
 function OrderDetailPage() {
   const { id } = Route.useParams();
   const { isAuthenticated, hydrated } = useAuth();
-  const { getOrder, now } = useOrders();
+  const { getOrder, now, cancelOrder, requestReturn } = useOrders();
+  const { add, setOpen } = useCart();
+  const [panel, setPanel] = useState<null | "cancel" | "return" | "exchange">(null);
+  const [reason, setReason] = useState("");
   const order = getOrder(id);
 
   if (!hydrated) {
@@ -172,7 +190,134 @@ function OrderDetailPage() {
           </div>
 
           <div className="luxe-card p-6 sm:p-8">
-            <h2 className="font-display text-2xl">Status · {orderStages[active]}</h2>
+            <h2 className="font-display text-2xl">Order actions</h2>
+            {order.status === "cancelled" ? (
+              <p className="mt-4 rounded-2xl border border-maroon/30 bg-maroon-soft p-5 text-sm text-maroon">
+                Cancelled on {formatTime(order.cancelledAt ?? order.createdAt)}
+                {order.cancelReason ? ` · ${order.cancelReason}` : ""}. Refunds reach the original
+                payment method in 3–5 working days.
+              </p>
+            ) : null}
+            {order.request ? (
+              <p className="mt-4 rounded-2xl border border-maroon/30 bg-maroon-soft p-5 text-sm text-maroon">
+                {order.request.type === "return" ? "Return" : "Exchange"} requested on{" "}
+                {formatTime(order.request.at)} · {order.request.reason}. Our concierge will call you
+                to arrange free insured pickup.
+              </p>
+            ) : null}
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                onClick={() => {
+                  order.lines.forEach((l) => add(l.slug, l.qty));
+                  setOpen(true);
+                  toast.success("Items added to your bag");
+                }}
+                className="flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
+              >
+                <Repeat2 className="size-3.5" /> Reorder
+              </button>
+              <button
+                onClick={() => downloadInvoice(order)}
+                className="flex items-center gap-2 rounded-full border border-maroon/30 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-maroon transition-colors hover:bg-maroon-soft"
+              >
+                <Download className="size-3.5" /> Invoice
+              </button>
+              {canCancel(order, now) ? (
+                <button
+                  onClick={() => {
+                    setReason("");
+                    setPanel(panel === "cancel" ? null : "cancel");
+                  }}
+                  className="flex items-center gap-2 rounded-full border border-border px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors hover:border-maroon hover:text-maroon"
+                >
+                  <XCircle className="size-3.5" /> Cancel order
+                </button>
+              ) : null}
+              {canReturn(order, now) ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setReason("");
+                      setPanel(panel === "return" ? null : "return");
+                    }}
+                    className="flex items-center gap-2 rounded-full border border-border px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors hover:border-maroon hover:text-maroon"
+                  >
+                    <RotateCcw className="size-3.5" /> Return
+                  </button>
+                  <button
+                    onClick={() => {
+                      setReason("");
+                      setPanel(panel === "exchange" ? null : "exchange");
+                    }}
+                    className="flex items-center gap-2 rounded-full border border-border px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors hover:border-maroon hover:text-maroon"
+                  >
+                    <Repeat2 className="size-3.5" /> Exchange
+                  </button>
+                </>
+              ) : null}
+            </div>
+
+            {panel ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (panel === "cancel") {
+                    cancelOrder(order.id, reason);
+                    toast.success("Order cancelled");
+                  } else {
+                    requestReturn(order.id, panel, reason);
+                    toast.success(
+                      panel === "return" ? "Return requested" : "Exchange requested",
+                    );
+                  }
+                  setPanel(null);
+                  setReason("");
+                }}
+                className="mt-6 rounded-2xl bg-maroon-soft/50 p-5"
+              >
+                <label htmlFor="reason" className="text-eyebrow">
+                  {panel === "cancel"
+                    ? "Why are you cancelling?"
+                    : panel === "return"
+                      ? "Reason for return"
+                      : "What would you like to exchange it for?"}
+                </label>
+                <textarea
+                  id="reason"
+                  required
+                  rows={3}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-maroon focus:ring-2 focus:ring-maroon/25"
+                />
+                <div className="mt-4 flex gap-3">
+                  <button
+                    type="submit"
+                    className="rounded-full bg-primary px-7 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPanel(null)}
+                    className="rounded-full border border-border px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors hover:border-maroon hover:text-maroon"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </form>
+            ) : null}
+            <p className="mt-5 text-[11px] text-muted-foreground">
+              Cancellations are available until the parcel ships. Returns and exchanges open once the
+              order is delivered, for 15 days.
+            </p>
+          </div>
+
+          <div className="luxe-card p-6 sm:p-8">
+            <h2 className="font-display text-2xl">
+              Status · {order.status === "cancelled" ? "Cancelled" : orderStages[active]}
+            </h2>
             <ol className="mt-6 space-y-4">
               {orderStages.map((stage, idx) => {
                 const done = idx <= active;

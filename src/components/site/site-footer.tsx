@@ -60,9 +60,13 @@ export function SiteFooter() {
                           ? "/login"
                           : l === "Create Account"
                             ? "/signup"
-                            : l === "Order History" || l === "Order Tracking"
-                              ? "/orders"
-                              : "/shop"
+                            : l === "Order Tracking"
+                              ? "/track"
+                              : l === "Order History"
+                                ? "/orders"
+                                : l === "My Profile"
+                                  ? "/account"
+                                  : "/shop"
                       }
                       className="opacity-65 transition-all hover:text-silver hover:opacity-100"
                     >

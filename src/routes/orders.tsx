@@ -1,8 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { CheckCircle2, Circle, Loader2, LogOut, Package, Phone, RefreshCw } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  Download,
+  Loader2,
+  LogOut,
+  Package,
+  Phone,
+  RefreshCw,
+  Repeat2,
+  UserRound,
+} from "lucide-react";
+import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
+import { useCart } from "@/lib/cart";
+import { downloadInvoice } from "@/lib/invoice";
 import { orderStages, stageEtaFor, stageIndexFor, useOrders } from "@/lib/orders";
 
 export const Route = createFileRoute("/orders")({
@@ -38,6 +52,7 @@ function formatTime(ts: number) {
 function OrdersPage() {
   const { isAuthenticated, hydrated, phone, signOut } = useAuth();
   const { orders, now } = useOrders();
+  const { add, setOpen } = useCart();
 
   if (!hydrated) {
     return (
@@ -86,6 +101,12 @@ function OrdersPage() {
           >
             <LogOut className="size-3.5" /> Sign out
           </button>
+          <Link
+            to="/account"
+            className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors hover:border-maroon hover:text-maroon"
+          >
+            <UserRound className="size-3.5" /> Profile
+          </Link>
         </div>
       </div>
 
@@ -137,6 +158,42 @@ function OrdersPage() {
                   </div>
                 </div>
 
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  <button
+                    onClick={() => {
+                      order.lines.forEach((l) => add(l.slug, l.qty));
+                      setOpen(true);
+                      toast.success("Items added to your bag");
+                    }}
+                    className="flex items-center gap-2 rounded-full border border-maroon/30 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-maroon transition-colors hover:bg-maroon-soft"
+                  >
+                    <Repeat2 className="size-3.5" /> Reorder
+                  </button>
+                  <button
+                    onClick={() => downloadInvoice(order)}
+                    className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:border-maroon hover:text-maroon"
+                  >
+                    <Download className="size-3.5" /> Invoice
+                  </button>
+                  <Link
+                    to="/order/$id"
+                    params={{ id: order.id }}
+                    className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors hover:border-maroon hover:text-maroon"
+                  >
+                    Cancel · return · exchange
+                  </Link>
+                  {order.status === "cancelled" ? (
+                    <span className="rounded-full bg-maroon px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
+                      Cancelled
+                    </span>
+                  ) : null}
+                  {order.request ? (
+                    <span className="rounded-full bg-maroon-soft px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-maroon">
+                      {order.request.type} requested
+                    </span>
+                  ) : null}
+                </div>
+
                 <div className="mt-5 space-y-3">
                   {order.lines.map((line) => (
                     <div key={line.slug} className="flex items-center gap-3">
@@ -155,9 +212,13 @@ function OrdersPage() {
                   ))}
                 </div>
 
-                <div className="mt-7 rounded-2xl bg-maroon-soft/60 p-5">
+                <div
+                  className={`mt-7 rounded-2xl bg-maroon-soft/60 p-5 ${
+                    order.status === "cancelled" ? "opacity-50" : ""
+                  }`}
+                >
                   <p className="text-eyebrow text-maroon">
-                    Status · {orderStages[active]}
+                    Status · {order.status === "cancelled" ? "Cancelled" : orderStages[active]}
                   </p>
                   <ol className="mt-5 grid gap-4 sm:grid-cols-5">
                     {orderStages.map((stage, idx) => {
