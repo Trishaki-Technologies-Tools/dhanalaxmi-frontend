@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { LayoutGrid, List, SlidersHorizontal, X } from "lucide-react";
 import { z } from "zod";
-import { categories, products, formatINR } from "@/lib/catalog";
+import { formatINR } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal } from "@/components/site/reveal";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ function FilterGroup({ title, children }: { title: string; children: React.React
 }
 
 function ShopPage() {
+  const { categories, products } = useCatalog();
   const search = Route.useSearch();
   const initialCategory = search.category?.toLowerCase();
   const isValidCategory = categories.some((c) => c.slug === initialCategory);
@@ -73,7 +75,7 @@ function ShopPage() {
     if (sort === "Weight") sorted.sort((a, b) => b.weight - a.weight);
     if (sort === "Popularity") sorted.sort((a, b) => b.popularity - a.popularity);
     return sorted;
-  }, [maxPrice, cats, occ, sort]);
+  }, [products, maxPrice, cats, occ, sort]);
 
   const activeCategory = cats.length === 1 ? categories.find((c) => c.slug === cats[0]) : null;
 

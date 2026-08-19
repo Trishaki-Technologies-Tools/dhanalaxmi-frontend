@@ -10,7 +10,8 @@ import {
   Star,
   ArrowRight,
 } from "lucide-react";
-import { getProduct, products, formatINR } from "@/lib/catalog";
+import { getProduct, formatINR } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal } from "@/components/site/reveal";
 import { cn } from "@/lib/utils";
@@ -43,7 +44,9 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { product: loaded } = Route.useLoaderData();
+  const { products } = useCatalog();
+  const product = products.find((p) => p.slug === loaded.slug) ?? loaded;
   const [active, setActive] = useState(0);
   const { add, setOpen } = useCart();
   const navigate = useNavigate();

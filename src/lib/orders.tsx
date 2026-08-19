@@ -36,6 +36,8 @@ export type Order = {
   savings?: number;
   /** Local lifecycle state. Defaults to "active" for older orders. */
   status?: "active" | "cancelled";
+  /** Admin-set fulfilment stage; overrides the demo time-based timeline. */
+  stageOverride?: number;
   cancelledAt?: number;
   cancelReason?: string;
   request?: {
@@ -53,6 +55,9 @@ export type OrderStage = (typeof orderStages)[number];
 const stageOffsetsMinutes = [0, 1, 2, 4, 6];
 
 export function stageIndexFor(order: Order, now: number) {
+  if (typeof order.stageOverride === "number") {
+    return Math.max(0, Math.min(orderStages.length - 1, order.stageOverride));
+  }
   const minutes = (now - order.createdAt) / 60000;
   let idx = 0;
   stageOffsetsMinutes.forEach((offset, i) => {
