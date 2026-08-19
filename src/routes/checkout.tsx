@@ -55,6 +55,7 @@ function CheckoutPage() {
   const { phone: authPhone } = useAuth();
   const { placeOrder } = useOrders();
   const { profile, addresses, defaultAddress, addAddress } = useProfile();
+  const { settings } = useCatalog();
   const navigate = useNavigate();
   const [method, setMethod] = useState<PayMethod>("upi");
   const [processing, setProcessing] = useState(false);
@@ -64,7 +65,7 @@ function CheckoutPage() {
     setSelectedId(defaultAddress?.id ?? null);
   }, [defaultAddress?.id]);
 
-  const codFee = method === "cod" ? 100 : 0;
+  const codFee = method === "cod" ? settings.codFee : 0;
   const total = subtotal + codFee;
   const initialPhone = useMemo(() => authPhone ?? "", [authPhone]);
   const selected = addresses.find((a) => a.id === selectedId);
