@@ -1,19 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { motion } from "motion/react";
 import {
   ArrowLeft,
   BadgeCheck,
   CheckCircle2,
   Circle,
+  Download,
   Loader2,
   MapPin,
   Package,
   Phone,
+  RotateCcw,
+  Repeat2,
   Truck,
+  XCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
-import { orderStages, stageEtaFor, stageIndexFor, useOrders } from "@/lib/orders";
+import { useCart } from "@/lib/cart";
+import { downloadInvoice } from "@/lib/invoice";
+import {
+  canCancel,
+  canReturn,
+  orderStages,
+  stageEtaFor,
+  stageIndexFor,
+  useOrders,
+} from "@/lib/orders";
 
 export const Route = createFileRoute("/order/$id")({
   head: () => ({
@@ -52,7 +67,10 @@ function Shell({ children }: { children: React.ReactNode }) {
 function OrderDetailPage() {
   const { id } = Route.useParams();
   const { isAuthenticated, hydrated } = useAuth();
-  const { getOrder, now } = useOrders();
+  const { getOrder, now, cancelOrder, requestReturn } = useOrders();
+  const { add, setOpen } = useCart();
+  const [panel, setPanel] = useState<null | "cancel" | "return" | "exchange">(null);
+  const [reason, setReason] = useState("");
   const order = getOrder(id);
 
   if (!hydrated) {
