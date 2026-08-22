@@ -4,9 +4,11 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
 
 export function CartDrawer() {
   const { open, setOpen, items, count, subtotal, savings, setQty, remove, clear } = useCart();
+  const { toggle } = useWishlist();
 
   return (
     <AnimatePresence>
@@ -70,11 +72,17 @@ export function CartDrawer() {
                         onClick={() => setOpen(false)}
                         className="shrink-0 overflow-hidden rounded-lg border border-border bg-pearl"
                       >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="size-20 object-cover"
-                        />
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="size-20 object-cover"
+                          />
+                        ) : (
+                          <div className="size-20 flex items-center justify-center bg-muted/30 text-[10px] uppercase tracking-widest text-muted-foreground border border-dashed border-border/50">
+                            {product.name.slice(0, 2)}
+                          </div>
+                        )}
                       </Link>
                       <div className="min-w-0 flex-1">
                         <p className="text-[8px] uppercase tracking-[0.2em] text-maroon">
@@ -102,7 +110,18 @@ export function CartDrawer() {
                           </div>
                           <button
                             aria-label={`Remove ${product.name}`}
-                            onClick={() => remove(product.slug)}
+                            onClick={() => {
+                              remove(product.slug);
+                              toast(`${product.name} removed from bag.`, {
+                                action: {
+                                  label: "Save to Wishlist",
+                                  onClick: () => {
+                                    if (product.id) toggle(product.id, product.name);
+                                  },
+                                },
+                                duration: 5000,
+                              });
+                            }}
                             className="text-muted-foreground transition-colors hover:text-maroon"
                           >
                             <Trash2 className="size-3.5" />

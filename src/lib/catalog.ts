@@ -71,12 +71,14 @@ export const categories: Category[] = [
 ];
 
 export type Product = {
+  id?: number;
   slug: string;
   name: string;
   category: string;
   categoryLabel: string;
   price: number;
   mrp: number;
+  makingCharges?: number;
   image: string;
   weight: number;
   metal: string;

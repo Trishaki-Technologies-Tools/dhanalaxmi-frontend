@@ -10,19 +10,25 @@ import {
   Star,
   ArrowRight,
 } from "lucide-react";
-import { getProduct, formatINR } from "@/lib/catalog";
+import { formatINR, type Product } from "@/lib/catalog";
 import { useCatalog } from "@/lib/catalog-store";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal } from "@/components/site/reveal";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
-    if (!product) throw notFound();
-    return { product };
+  loader: async ({ params }) => {
+    try {
+      const res = await api.products.getBySlug(params.slug);
+      if (!res.product) throw notFound();
+      return { product: res.product as Product };
+    } catch {
+      throw notFound();
+    }
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -49,6 +55,7 @@ function ProductPage() {
   const product = products.find((p) => p.slug === loaded.slug) ?? loaded;
   const [active, setActive] = useState(0);
   const { add, setOpen } = useCart();
+  const { toggle, has } = useWishlist();
   const navigate = useNavigate();
   const gallery = [product.image, product.image, product.image, product.image];
   const related = products.filter((p) => p.slug !== product.slug).slice(0, 4);
@@ -71,13 +78,19 @@ function ProductPage() {
         <div className="mt-10 grid gap-14 lg:grid-cols-2">
           <div>
             <Reveal className="overflow-hidden rounded-[1.25rem] border border-border bg-secondary">
-              <img
-                src={gallery[active]}
-                alt={product.name}
-                width={900}
-                height={1100}
-                className="aspect-4/5 w-full object-cover transition-transform duration-700 hover:scale-110"
-              />
+              {gallery[active] ? (
+                <img
+                  src={gallery[active]}
+                  alt={product.name}
+                  width={900}
+                  height={1100}
+                  className="aspect-4/5 w-full object-cover transition-transform duration-700 hover:scale-110"
+                />
+              ) : (
+                <div className="aspect-4/5 w-full flex items-center justify-center bg-muted/30 border-b border-border/50 text-xl text-muted-foreground uppercase tracking-widest font-display">
+                  {product.name.slice(0, 2)}
+                </div>
+              )}
             </Reveal>
             <div className="mt-4 grid grid-cols-4 gap-4">
               {gallery.map((img, i) => (
@@ -90,14 +103,20 @@ function ProductPage() {
                     active === i ? "border-maroon" : "border-border",
                   )}
                 >
-                  <img
-                    src={img}
-                    alt=""
-                    loading="lazy"
-                    width={900}
-                    height={1100}
-                    className="aspect-square w-full object-cover"
-                  />
+                  {img ? (
+                    <img
+                      src={img}
+                      alt=""
+                      loading="lazy"
+                      width={900}
+                      height={1100}
+                      className="aspect-square w-full object-cover"
+                    />
+                  ) : (
+                    <div className="aspect-square w-full flex items-center justify-center bg-muted/30 text-xs text-muted-foreground uppercase tracking-widest">
+                      {product.name.slice(0, 2)}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -141,11 +160,14 @@ function ProductPage() {
                 Add to bag
               </button>
               <button
-                onClick={() => toast("Saved to your wishlist.")}
+                onClick={() => product.id && toggle(product.id, product.name)}
                 aria-label="Add to wishlist"
-                className="flex size-14 items-center justify-center rounded-full border border-border transition-colors hover:bg-maroon-soft hover:text-maroon"
+                className={cn(
+                  "flex size-14 items-center justify-center rounded-full border transition-colors hover:bg-maroon-soft hover:border-maroon",
+                  product.id && has(product.id) ? "border-maroon text-maroon" : "border-border text-foreground hover:text-maroon"
+                )}
               >
-                <Heart className="size-5" />
+                <Heart className={cn("size-5", product.id && has(product.id) && "fill-current")} />
               </button>
             </div>
 

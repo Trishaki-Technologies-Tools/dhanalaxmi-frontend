@@ -2,10 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { Eye, Heart, ShoppingBag, Star } from "lucide-react";
 import { formatINR, type Product } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
+import { cn } from "@/lib/utils";
 
 export function ProductCard({ product }: { product: Product }) {
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
   const { add, setOpen } = useCart();
+  const { toggle, has } = useWishlist();
 
   return (
     <Link
@@ -14,22 +17,40 @@ export function ProductCard({ product }: { product: Product }) {
       className="group block overflow-hidden rounded-xl border border-border bg-card transition-[transform,box-shadow,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-maroon hover:shadow-luxe"
     >
       <div className="shine-sweep relative overflow-hidden bg-pearl">
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          width={700}
-          height={900}
-          className="aspect-[3/4] w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
-        />
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            width={700}
+            height={900}
+            className="aspect-[3/4] w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+          />
+        ) : (
+          <div className="aspect-[3/4] w-full flex items-center justify-center bg-muted/30 border border-dashed border-border/50">
+            <span className="text-xs text-muted-foreground uppercase tracking-widest">{product.name.slice(0, 2)}</span>
+          </div>
+        )}
         {product.badge ? (
           <span className="glass-panel absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em]">
             {product.badge}
           </span>
         ) : null}
         <span className="absolute right-3 top-3 flex flex-col gap-1.5">
-          <span className="flex size-8 translate-x-3 items-center justify-center rounded-full bg-background/85 text-foreground opacity-0 shadow-soft backdrop-blur transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 hover:bg-maroon-soft hover:text-maroon">
-            <Heart className="size-3.5" />
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (product.id) toggle(product.id, product.name);
+            }}
+            className={cn(
+              "flex size-8 translate-x-3 items-center justify-center rounded-full bg-background/85 text-foreground opacity-0 shadow-soft backdrop-blur transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 hover:bg-maroon-soft hover:text-maroon",
+              product.id && has(product.id) && "text-maroon opacity-100 translate-x-0 bg-maroon-soft"
+            )}
+          >
+            <Heart className={cn("size-3.5", product.id && has(product.id) && "fill-current")} />
           </span>
           <span className="flex size-8 translate-x-3 items-center justify-center rounded-full bg-background/85 text-foreground opacity-0 shadow-soft backdrop-blur transition-all delay-75 duration-500 group-hover:translate-x-0 group-hover:opacity-100 hover:bg-maroon-soft hover:text-maroon">
             <Eye className="size-3.5" />

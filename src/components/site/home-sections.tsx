@@ -77,14 +77,18 @@ export function PopularCategories() {
                 className="group flex flex-col items-center gap-5"
               >
                 <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-full bg-mist">
-                  <img
-                    src={c.image}
-                    alt={c.name}
-                    loading="lazy"
-                    width={400}
-                    height={400}
-                    className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+                  {c.image ? (
+                    <img
+                      src={c.image}
+                      alt={c.name}
+                      loading="lazy"
+                      width={400}
+                      height={400}
+                      className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  ) : (
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{c.name.slice(0, 2)}</span>
+                  )}
                 </span>
                 <span className="border-b border-transparent pb-1 text-[11px] uppercase tracking-[0.2em] transition-colors group-hover:border-maroon group-hover:text-maroon">
                   {c.name}

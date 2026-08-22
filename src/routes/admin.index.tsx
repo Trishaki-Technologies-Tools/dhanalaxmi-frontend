@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { formatINR } from "@/lib/catalog";
 import { useCatalog } from "@/lib/catalog-store";
-import { orderStages, stageIndexFor, useOrders } from "@/lib/orders";
+import { orderStages, stageIndexFor, type Order } from "@/lib/orders";
 import { Panel, StatPill } from "@/components/admin/ui";
+import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
@@ -11,7 +13,42 @@ export const Route = createFileRoute("/admin/")({
 
 function AdminDashboard() {
   const { products, categories, banners } = useCatalog();
-  const { allOrders, now } = useOrders();
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const now = Date.now();
+
+  useEffect(() => {
+    api.orders.getAllAdmin().then((res) => {
+      if (res.orders) {
+        setAllOrders(
+          res.orders.map((o: any) => ({
+            id: o.orderNumber || String(o.id),
+            phone: o.customerPhone || "",
+            createdAt: new Date(o.createdAt).getTime(),
+            total: Number(o.totalAmount),
+            method: (o.paymentMethod || "UPI").toLowerCase(),
+            paid: o.paymentStatus === "PAID",
+            shipTo: `${o.customerName}, ${o.city}`,
+            address: {
+              name: o.customerName,
+              email: o.customerEmail || "",
+              phone: o.customerPhone,
+              address: o.addressLine1,
+              city: o.city,
+              pincode: o.pincode,
+            },
+            status: (o.status === "CANCELLED" ? "cancelled" : "active") as Order["status"],
+            lines: o.items.map((item: any) => ({
+              slug: item.productSlug,
+              name: item.productName,
+              image: item.productImage,
+              price: Number(item.price),
+              qty: item.quantity,
+            })),
+          }))
+        );
+      }
+    });
+  }, []);
 
   const live = allOrders.filter((o) => (o.status ?? "active") === "active");
   const revenue = live.reduce((sum, o) => sum + o.total, 0);

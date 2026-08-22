@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { formatINR } from "@/lib/catalog";
-import { useOrders } from "@/lib/orders";
+import { type Order } from "@/lib/orders";
 import { Panel, StatPill } from "@/components/admin/ui";
+import { api } from "@/lib/api";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin/customers")({
   component: AdminCustomers,
@@ -19,8 +21,42 @@ type Row = {
 };
 
 function AdminCustomers() {
-  const { allOrders } = useOrders();
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    api.orders.getAllAdmin().then((res) => {
+      if (res.orders) {
+        setAllOrders(
+          res.orders.map((o: any) => ({
+            id: o.orderNumber || String(o.id),
+            phone: o.customerPhone || "",
+            createdAt: new Date(o.createdAt).getTime(),
+            total: Number(o.totalAmount),
+            method: (o.paymentMethod || "UPI").toLowerCase(),
+            paid: o.paymentStatus === "PAID",
+            shipTo: `${o.customerName}, ${o.city}`,
+            address: {
+              name: o.customerName,
+              email: o.customerEmail || "",
+              phone: o.customerPhone,
+              address: o.addressLine1,
+              city: o.city,
+              pincode: o.pincode,
+            },
+            status: (o.status === "CANCELLED" ? "cancelled" : "active") as Order["status"],
+            lines: o.items.map((item: any) => ({
+              slug: item.productSlug,
+              name: item.productName,
+              image: item.productImage,
+              price: Number(item.price),
+              qty: item.quantity,
+            })),
+          }))
+        );
+      }
+    });
+  }, []);
 
   const rows = useMemo(() => {
     const map = new Map<string, Row>();

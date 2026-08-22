@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, X, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Category } from "@/lib/catalog";
 import { deleteCategory, saveCategory, slugify, useCatalog } from "@/lib/catalog-store";
 import { AdminButton, Field, Panel } from "@/components/admin/ui";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/admin/categories")({
   component: AdminCategories,
@@ -13,6 +14,24 @@ export const Route = createFileRoute("/admin/categories")({
 function AdminCategories() {
   const { categories, products } = useCatalog();
   const [editing, setEditing] = useState<{ draft: Category; originalSlug?: string } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploadingImage(true);
+    try {
+      const res = await api.upload.image(file);
+      update({ image: res.url });
+      toast.success("Image uploaded successfully");
+    } catch (err) {
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
+  };
 
   const update = (patch: Partial<Category>) =>
     setEditing((e) => (e ? { ...e, draft: { ...e.draft, ...patch } } : e));
@@ -74,11 +93,31 @@ function AdminCategories() {
               value={editing.draft.tagline}
               onChange={(v) => update({ tagline: v })}
             />
-            <Field
-              label="Image URL"
-              value={editing.draft.image}
-              onChange={(v) => update({ image: v })}
-            />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Image</label>
+              <div className="flex items-center gap-3">
+                {editing.draft.image ? (
+                  <img src={editing.draft.image} alt="Preview" className="size-10 rounded object-cover border border-border" />
+                ) : (
+                  <div className="size-10 rounded border border-dashed border-border flex items-center justify-center bg-muted/30">
+                    <span className="text-[10px] text-muted-foreground">None</span>
+                  </div>
+                )}
+                <div className="flex-1 flex gap-2">
+                  <input
+                    type="text"
+                    value={editing.draft.image}
+                    placeholder="https://…"
+                    onChange={(e) => update({ image: e.target.value })}
+                    className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-maroon"
+                  />
+                  <label className="relative flex cursor-pointer items-center justify-center rounded-md border border-border bg-background px-3 py-1.5 text-sm transition-colors hover:bg-muted/50">
+                    {isUploadingImage ? <Loader2 className="size-4 animate-spin text-maroon" /> : <Upload className="size-4 text-muted-foreground" />}
+                    <input type="file" accept="image/*" className="sr-only" onChange={handleImageUpload} disabled={isUploadingImage} />
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="mt-5 flex gap-3">
             <AdminButton onClick={submit}>Save category</AdminButton>
@@ -93,7 +132,13 @@ function AdminCategories() {
         {categories.map((c) => (
           <div key={c.slug} className="rounded-[1.25rem] border border-border bg-background p-4">
             <div className="flex items-center gap-4">
-              <img src={c.image} alt="" className="size-16 rounded-lg object-cover" />
+              {c.image ? (
+                <img src={c.image} alt="" className="size-16 rounded-lg object-cover bg-muted/30" />
+              ) : (
+                <div className="size-16 rounded-lg bg-muted/30 flex items-center justify-center border border-dashed border-border">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest">No Img</span>
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{c.name}</p>
                 <p className="truncate text-xs text-muted-foreground">{c.tagline}</p>

@@ -20,6 +20,7 @@ import { CartProvider } from "../lib/cart";
 import { AuthProvider } from "../lib/auth";
 import { OrdersProvider } from "../lib/orders";
 import { ProfileProvider } from "../lib/profile";
+import { WishlistProvider } from "../lib/wishlist";
 import { AdminProvider } from "../lib/admin";
 import { hydrateCatalog } from "../lib/catalog-store";
 import { CartDrawer } from "../components/site/cart-drawer";
@@ -126,11 +127,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>
@@ -155,6 +156,7 @@ function RootComponent() {
       <AdminProvider>
       <ProfileProvider>
       <OrdersProvider>
+      <WishlistProvider>
       <CartProvider>
         {!isAdminPage && <SiteHeader />}
         <main className={bare ? "" : "pb-20 md:pb-0"}>
@@ -166,6 +168,7 @@ function RootComponent() {
         <CartDrawer />
         <Toaster />
       </CartProvider>
+      </WishlistProvider>
       </OrdersProvider>
       </ProfileProvider>
       </AdminProvider>

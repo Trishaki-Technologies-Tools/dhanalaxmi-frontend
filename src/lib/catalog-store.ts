@@ -6,6 +6,7 @@ import {
   type Category,
   type Product,
 } from "@/lib/catalog";
+import { api } from "@/lib/api";
 import heroCinematic from "@/assets/hero-cinematic.jpg";
 import heroEarrings from "@/assets/hero-earrings.jpg";
 import heroModel from "@/assets/hero-model.jpg";
@@ -163,19 +164,90 @@ function persist() {
 }
 
 /** Called once on the client after hydration so SSR markup matches. */
-export function hydrateCatalog() {
+export async function hydrateCatalog() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as Partial<CatalogState>;
-    state = {
-      products: parsed.products?.length ? parsed.products : state.products,
-      categories: parsed.categories?.length ? parsed.categories : state.categories,
-      banners: parsed.banners?.length ? parsed.banners : state.banners,
-      promos: parsed.promos?.length ? parsed.promos : state.promos,
-      settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
-    };
-    emit();
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<CatalogState>;
+      state = {
+        products: parsed.products?.length ? parsed.products : state.products,
+        categories: parsed.categories?.length ? parsed.categories : state.categories,
+        banners: parsed.banners?.length ? parsed.banners : state.banners,
+        promos: parsed.promos?.length ? parsed.promos : state.promos,
+        settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
+      };
+      emit();
+    }
+
+    // Fetch live products from MySQL backend API (with Cloudflare R2 images)
+    try {
+      const response = await fetch("http://localhost:5001/api/products");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          const apiProducts: Product[] = data.products.map((p: any) => {
+            const localMatch = defaultProducts.find((lp) => lp.slug === p.slug);
+            const resolvedImage = p.image.startsWith("/assets/") && localMatch ? localMatch.image : p.image;
+            
+            return {
+              id: p.id,
+              slug: p.slug,
+              name: p.name,
+              category: p.categorySlug || p.category?.slug || "bracelets",
+              categoryLabel: p.categoryLabel || p.category?.name || "Silver Jewelry",
+              price: Number(p.price) || 0,
+              mrp: Number(p.mrp) || Math.round((Number(p.price) || 0) * 1.2),
+              image: resolvedImage,
+              weight: Number(p.weight) || 10.0,
+              metal: p.metal || "925 Sterling Silver",
+              occasion: p.occasion || "Everyday",
+              collection: p.collection || "Signature",
+            badge: p.badge || undefined,
+            rating: Number(p.rating) || 4.8,
+            reviews: Number(p.reviewsCount ?? p.reviews) || 24,
+            stock: Number(p.stock) || 20,
+            popularity: Number(p.popularity) || 85,
+            description: p.description || "Crafted in 925 hallmarked sterling silver.",
+            };
+          });
+          state = { ...state, products: apiProducts };
+          persist();
+          emit();
+        }
+      }
+
+      // Fetch categories
+      try {
+        const catRes = await api.categories.getAll();
+        if (catRes.categories && catRes.categories.length > 0) {
+          const apiCategories = catRes.categories.map((c: any) => {
+            const localMatch = defaultCategories.find((lc) => lc.slug === c.slug);
+            const resolvedImage = c.image && !c.image.startsWith("http") && localMatch ? localMatch.image : c.image;
+            return { ...c, image: resolvedImage || "" };
+          });
+          state = { ...state, categories: apiCategories };
+          persist();
+          emit();
+        }
+      } catch (err) {}
+
+      // Fetch banners & promos
+      try {
+        const banRes = await api.banners.getAll();
+        if (banRes.banners || banRes.promos) {
+          state = { 
+            ...state, 
+            banners: banRes.banners && banRes.banners.length > 0 ? banRes.banners : state.banners,
+            promos: banRes.promos && banRes.promos.length > 0 ? banRes.promos : state.promos,
+          };
+          persist();
+          emit();
+        }
+      } catch (err) {}
+
+    } catch {
+      /* Fallback to default/local catalog if offline */
+    }
   } catch {
     /* ignore */
   }
@@ -197,7 +269,18 @@ export function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-export function saveProduct(product: Product, originalSlug?: string) {
+export async function saveProduct(product: Product, originalSlug?: string) {
+  try {
+    if (product.id) {
+      await api.products.update(product.id, product);
+    } else {
+      const res = await api.products.create(product);
+      if (res.product && res.product.id) product.id = res.product.id;
+    }
+  } catch (err) {
+    console.error("Failed to sync product to DB", err);
+  }
+
   const list = [...state.products];
   const idx = originalSlug ? list.findIndex((p) => p.slug === originalSlug) : -1;
   if (idx >= 0) list[idx] = product;
@@ -205,11 +288,28 @@ export function saveProduct(product: Product, originalSlug?: string) {
   updateCatalog({ products: list });
 }
 
-export function deleteProduct(slug: string) {
+export async function deleteProduct(slug: string) {
+  const target = state.products.find((p) => p.slug === slug);
+  if (target && target.id) {
+    try {
+      await api.products.delete(target.id);
+    } catch (err) {
+      console.error("Failed to delete product from DB", err);
+    }
+  }
   updateCatalog({ products: state.products.filter((p) => p.slug !== slug) });
 }
 
-export function saveCategory(category: Category, originalSlug?: string) {
+export async function saveCategory(category: Category, originalSlug?: string) {
+  try {
+    if (originalSlug) {
+      await api.categories.update(originalSlug, category);
+    } else {
+      await api.categories.create(category);
+    }
+  } catch (err) {
+    console.error("Failed to sync category to DB", err);
+  }
   const list = [...state.categories];
   const idx = originalSlug ? list.findIndex((c) => c.slug === originalSlug) : -1;
   if (idx >= 0) list[idx] = category;
@@ -217,11 +317,27 @@ export function saveCategory(category: Category, originalSlug?: string) {
   updateCatalog({ categories: list });
 }
 
-export function deleteCategory(slug: string) {
+export async function deleteCategory(slug: string) {
+  try {
+    await api.categories.delete(slug);
+  } catch (err) {
+    console.error("Failed to delete category from DB", err);
+  }
   updateCatalog({ categories: state.categories.filter((c) => c.slug !== slug) });
 }
 
-export function saveBanner(banner: Banner) {
+export async function saveBanner(banner: Banner) {
+  try {
+    const exists = state.banners.some((b) => b.id === banner.id);
+    if (exists && !banner.id.startsWith("new-")) {
+      await api.banners.updateBanner(banner.id, banner);
+    } else {
+      const res = await api.banners.createBanner(banner);
+      if (res.banner) banner.id = res.banner.id;
+    }
+  } catch (err) {
+    console.error("Failed to sync banner to DB", err);
+  }
   const list = [...state.banners];
   const idx = list.findIndex((b) => b.id === banner.id);
   if (idx >= 0) list[idx] = banner;
@@ -229,7 +345,12 @@ export function saveBanner(banner: Banner) {
   updateCatalog({ banners: list });
 }
 
-export function deleteBanner(id: string) {
+export async function deleteBanner(id: string) {
+  try {
+    await api.banners.deleteBanner(id);
+  } catch (err) {
+    console.error("Failed to delete banner from DB", err);
+  }
   updateCatalog({ banners: state.banners.filter((b) => b.id !== id) });
 }
 
@@ -245,7 +366,18 @@ export function moveBanner(id: string, dir: -1 | 1) {
   updateCatalog({ banners: list });
 }
 
-export function savePromo(promo: PromoTile) {
+export async function savePromo(promo: PromoTile) {
+  try {
+    const exists = state.promos.some((p) => p.id === promo.id);
+    if (exists && !promo.id.startsWith("new-")) {
+      await api.banners.updatePromo(promo.id, promo);
+    } else {
+      const res = await api.banners.createPromo(promo);
+      if (res.promo) promo.id = res.promo.id;
+    }
+  } catch (err) {
+    console.error("Failed to sync promo to DB", err);
+  }
   const list = [...state.promos];
   const idx = list.findIndex((p) => p.id === promo.id);
   if (idx >= 0) list[idx] = promo;
@@ -253,7 +385,12 @@ export function savePromo(promo: PromoTile) {
   updateCatalog({ promos: list });
 }
 
-export function deletePromo(id: string) {
+export async function deletePromo(id: string) {
+  try {
+    await api.banners.deletePromo(id);
+  } catch (err) {
+    console.error("Failed to delete promo from DB", err);
+  }
   updateCatalog({ promos: state.promos.filter((p) => p.id !== id) });
 }
 

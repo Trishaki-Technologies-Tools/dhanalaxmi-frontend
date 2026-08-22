@@ -2,17 +2,59 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
-import { orderStages, stageIndexFor, useOrders } from "@/lib/orders";
+import { orderStages, stageIndexFor, useOrders, type Order } from "@/lib/orders";
 import { AdminButton, Panel, StatPill } from "@/components/admin/ui";
+import { api } from "@/lib/api";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin/orders")({
   component: AdminOrders,
 });
 
 function AdminOrders() {
-  const { allOrders, now, updateOrder, cancelOrder } = useOrders();
+  const { now, updateOrder, cancelOrder } = useOrders();
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [query, setQuery] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await api.orders.getAllAdmin();
+        if (res.orders) {
+          const formattedOrders = res.orders.map((o: any) => ({
+            id: o.orderNumber || String(o.id),
+            phone: o.customerPhone || "",
+            createdAt: new Date(o.createdAt).getTime(),
+            total: Number(o.totalAmount),
+            method: (o.paymentMethod || "UPI").toLowerCase(),
+            paid: o.paymentStatus === "PAID",
+            shipTo: `${o.customerName}, ${o.city}`,
+            address: {
+              name: o.customerName,
+              email: o.customerEmail || "",
+              phone: o.customerPhone,
+              address: o.addressLine1,
+              city: o.city,
+              pincode: o.pincode,
+            },
+            status: (o.status === "CANCELLED" ? "cancelled" : "active") as Order["status"],
+            lines: o.items.map((item: any) => ({
+              slug: item.productSlug,
+              name: item.productName,
+              image: item.productImage,
+              qty: item.quantity,
+              price: Number(item.price),
+            })),
+          }));
+          setAllOrders(formattedOrders);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin orders", err);
+      }
+    }
+    load();
+  }, []);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -120,9 +162,16 @@ function AdminOrders() {
                     aria-label={`Set stage for ${o.id}`}
                     value={String(stage)}
                     disabled={cancelled}
-                    onChange={(e) => {
-                      updateOrder(o.id, { stageOverride: Number(e.target.value) });
-                      toast.success(`${o.id} → ${orderStages[Number(e.target.value)]}`);
+                    onChange={async (e) => {
+                      const newStage = Number(e.target.value);
+                      try {
+                        const statusToUpdate = newStage === 4 ? "DELIVERED" : "PROCESSING";
+                        await api.orders.updateAdmin(o.id, { status: statusToUpdate });
+                        setAllOrders(all => all.map(ord => ord.id === o.id ? { ...ord, stageOverride: newStage } : ord));
+                        toast.success(`${o.id} → ${orderStages[newStage]}`);
+                      } catch (err) {
+                        toast.error("Failed to update status");
+                      }
                     }}
                     className="rounded-full border border-border bg-background px-3 py-1.5 text-xs outline-none focus:border-maroon disabled:opacity-40"
                   >
@@ -135,9 +184,14 @@ function AdminOrders() {
                   {!o.paid && !cancelled && (
                     <AdminButton
                       variant="outline"
-                      onClick={() => {
-                        updateOrder(o.id, { paid: true });
-                        toast.success("Marked as paid");
+                      onClick={async () => {
+                        try {
+                          await api.orders.updateAdmin(o.id, { paymentStatus: "PAID" });
+                          setAllOrders(all => all.map(ord => ord.id === o.id ? { ...ord, paid: true } : ord));
+                          toast.success("Marked as paid");
+                        } catch (err) {
+                          toast.error("Failed to mark as paid");
+                        }
                       }}
                     >
                       Mark paid
@@ -146,18 +200,31 @@ function AdminOrders() {
                   {!cancelled && (
                     <AdminButton
                       variant="danger"
-                      onClick={() => {
-                        cancelOrder(o.id, "Cancelled by store");
-                        toast.success("Order cancelled");
+                      onClick={async () => {
+                        try {
+                          await api.orders.updateAdmin(o.id, { status: "CANCELLED" });
+                          setAllOrders(all => all.map(ord => ord.id === o.id ? { ...ord, status: "cancelled" } : ord));
+                          toast.success("Order cancelled");
+                        } catch (err) {
+                          toast.error("Failed to cancel order");
+                        }
                       }}
                     >
                       Cancel order
                     </AdminButton>
                   )}
+                  <a
+                    href={`/admin/invoice?order=${o.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-auto text-xs uppercase tracking-[0.14em] text-muted-foreground underline-offset-4 hover:underline hover:text-maroon"
+                  >
+                    Print Invoice
+                  </a>
                   <Link
                     to="/order/$id"
                     params={{ id: o.id }}
-                    className="ml-auto text-xs uppercase tracking-[0.14em] text-maroon underline-offset-4 hover:underline"
+                    className="ml-4 text-xs uppercase tracking-[0.14em] text-maroon underline-offset-4 hover:underline"
                   >
                     Customer view
                   </Link>

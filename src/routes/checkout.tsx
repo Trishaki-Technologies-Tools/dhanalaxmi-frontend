@@ -18,6 +18,7 @@ import { useAuth, normalizePhone } from "@/lib/auth";
 import { useOrders } from "@/lib/orders";
 import { useProfile } from "@/lib/profile";
 import { useCatalog } from "@/lib/catalog-store";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -52,7 +53,7 @@ const inputClass =
   "mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-maroon focus:ring-2 focus:ring-maroon/25";
 
 function CheckoutPage() {
-  const { items, subtotal, savings, clear } = useCart();
+  const { items, subtotal, savings, clear, coupon, applyCoupon, discount } = useCart();
   const { phone: authPhone } = useAuth();
   const { placeOrder } = useOrders();
   const { profile, addresses, defaultAddress, addAddress } = useProfile();
@@ -62,13 +63,35 @@ function CheckoutPage() {
   const [processing, setProcessing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
   useEffect(() => {
     setSelectedId(defaultAddress?.id ?? null);
   }, [defaultAddress?.id]);
 
   const codFee = method === "cod" ? settings.codFee : 0;
-  const total = subtotal + codFee;
+  const total = Math.max(0, subtotal - discount) + codFee;
   const initialPhone = useMemo(() => authPhone ?? "", [authPhone]);
+
+  const handleApplyCoupon = async () => {
+    setCouponError("");
+    if (!couponInput.trim()) return;
+    
+    setIsApplyingCoupon(true);
+    try {
+      const res = await api.coupons.validate(couponInput.trim(), subtotal);
+      applyCoupon(res.coupon);
+      toast.success("Coupon applied successfully!");
+    } catch (err: any) {
+      setCouponError(err.message || "Invalid coupon");
+      applyCoupon(null);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
   const selected = addresses.find((a) => a.id === selectedId);
   const defaults = {
     name: selected?.name ?? profile.name ?? "",
@@ -97,7 +120,7 @@ function CheckoutPage() {
     );
   }
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const buyerPhone = normalizePhone(String(form.get("phone") ?? ""));
@@ -110,10 +133,10 @@ function CheckoutPage() {
       addAddress({ label: "Saved at checkout", name, phone: buyerPhone, address, city, pincode });
     }
     setProcessing(true);
-    // Demo payment authorisation — replace with the live payment provider session.
-    setTimeout(() => {
+    
+    try {
       const paid = method === "cod" ? "0" : "1";
-      const order = placeOrder({
+      const order = await placeOrder({
         phone: authPhone ?? buyerPhone,
         total,
         method,
@@ -137,7 +160,11 @@ function CheckoutPage() {
         to: "/order-confirmed",
         search: { order: order.id, total: String(total), paid, method },
       });
-    }, 1400);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to place order. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -313,6 +340,41 @@ function CheckoutPage() {
               ))}
             </div>
 
+            <div className="mt-6 border-t border-border pt-5">
+              <label className="text-eyebrow text-muted-foreground block mb-2">Discount Code</label>
+              {coupon ? (
+                <div className="flex items-center justify-between rounded-lg bg-green-500/10 px-3 py-2 border border-green-500/20">
+                  <span className="text-xs font-semibold text-green-700 dark:text-green-400">Code: {coupon.code} applied!</span>
+                  <button 
+                    type="button"
+                    onClick={() => { applyCoupon(null); setCouponInput(""); }}
+                    className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder="Enter coupon"
+                    className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-maroon"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={isApplyingCoupon || !couponInput.trim()}
+                    className="rounded-lg bg-muted px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-border disabled:opacity-50"
+                  >
+                    {isApplyingCoupon ? <Loader2 className="size-3 animate-spin" /> : "Apply"}
+                  </button>
+                </div>
+              )}
+              {couponError && <p className="text-[10px] text-red-500 mt-1">{couponError}</p>}
+            </div>
+
             <dl className="mt-6 space-y-2 border-t border-border pt-5 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
@@ -330,8 +392,14 @@ function CheckoutPage() {
               ) : null}
               {savings > 0 ? (
                 <div className="flex justify-between text-maroon">
-                  <dt>You save</dt>
+                  <dt>Product savings</dt>
                   <dd className="font-price">{formatINR(savings)}</dd>
+                </div>
+              ) : null}
+              {discount > 0 ? (
+                <div className="flex justify-between text-green-600 dark:text-green-500 font-medium">
+                  <dt>Coupon discount</dt>
+                  <dd className="font-price">-{formatINR(discount)}</dd>
                 </div>
               ) : null}
               <div className="flex items-baseline justify-between border-t border-border pt-3">

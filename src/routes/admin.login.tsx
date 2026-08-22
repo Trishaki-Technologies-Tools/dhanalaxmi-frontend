@@ -22,9 +22,10 @@ function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (signIn(email, password)) {
+    const success = await signIn(email, password);
+    if (success) {
       navigate({ to: "/admin", replace: true });
       return;
     }

@@ -46,9 +46,9 @@ function TrackPage() {
   const [result, setResult] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const lookup = (e: React.FormEvent) => {
+  const lookup = async (e: React.FormEvent) => {
     e.preventDefault();
-    const found = findOrder(orderId, contact);
+    const found = await findOrder(orderId, contact);
     if (!found) {
       setResult(null);
       setError("We couldn't match that order ID with this phone number or email.");

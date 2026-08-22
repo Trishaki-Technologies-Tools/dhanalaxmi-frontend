@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Pencil, Plus, Trash2, X, Loader2, Upload, Download, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { formatINR, type Product } from "@/lib/catalog";
 import { deleteProduct, saveProduct, slugify, useCatalog } from "@/lib/catalog-store";
 import { AdminButton, Field, Panel, TextArea } from "@/components/admin/ui";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProducts,
@@ -18,8 +19,9 @@ function emptyProduct(categorySlug: string, categoryLabel: string): Product {
     categoryLabel,
     price: 0,
     mrp: 0,
+    makingCharges: 50,
     image: "",
-    weight: 0,
+    weight: 10,
     metal: "925 Sterling Silver",
     occasion: "Everyday",
     collection: "Signature",
@@ -36,6 +38,103 @@ function AdminProducts() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [editing, setEditing] = useState<{ draft: Product; originalSlug?: string } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [silverRate, setSilverRate] = useState<number>(0);
+
+  useEffect(() => {
+    api.settings.getSilverRate().then(res => {
+      if (res.silverRate) setSilverRate(res.silverRate);
+    }).catch(() => {});
+  }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploadingImage(true);
+    try {
+      const res = await api.upload.image(file);
+      update({ image: res.url });
+      toast.success("Image uploaded successfully");
+    } catch (err) {
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploadingImage(false);
+      // Reset input value so same file can be uploaded again if needed
+      e.target.value = "";
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (products.length === 0) return toast.error("No products to export");
+    const headers = ["slug", "name", "category", "weight", "makingCharges", "stock", "image", "description"];
+    const csvRows = [headers.join(",")];
+    for (const p of products) {
+      const row = headers.map(h => {
+        let val = (p as any)[h] || "";
+        if (typeof val === "string") val = `"${val.replace(/"/g, '""')}"`;
+        return val;
+      });
+      csvRows.push(row.join(","));
+    }
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dhanalaxmi_products.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split("\n").filter(l => l.trim());
+        if (lines.length <= 1) return toast.error("Empty CSV");
+        
+        const headers = lines[0].split(",").map(h => h.trim().replace(/"/g, ""));
+        let imported = 0;
+        
+        for (let i = 1; i < lines.length; i++) {
+          // Simple regex to split by comma ignoring commas inside quotes
+          const rowMatches = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(",");
+          const row = rowMatches.map(c => c.trim().replace(/^"|"$/g, ""));
+          
+          const draft: any = {};
+          headers.forEach((h, idx) => {
+            draft[h] = row[idx] || "";
+          });
+          
+          if (!draft.name || !draft.category) continue;
+          
+          const category = categories.find(c => c.slug === draft.category) || categories[0];
+          if (!category) continue;
+          
+          const product: Product = {
+            ...emptyProduct(category.slug, category.name),
+            slug: draft.slug || slugify(draft.name),
+            name: draft.name,
+            weight: Number(draft.weight) || 10,
+            makingCharges: Number(draft.makingCharges) || 50,
+            stock: Number(draft.stock) || 10,
+            image: draft.image || category.image,
+            description: draft.description || "",
+          };
+          await saveProduct(product, product.slug);
+          imported++;
+        }
+        toast.success(`Imported ${imported} products successfully`);
+      } catch (err) {
+        toast.error("Failed to parse CSV");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  };
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -83,9 +182,20 @@ function AdminProducts() {
             {products.length} pieces live on the storefront.
           </p>
         </div>
-        <AdminButton onClick={startNew}>
-          <Plus className="size-4" /> Add product
-        </AdminButton>
+        <div className="flex flex-wrap gap-2">
+          <AdminButton variant="outline" onClick={handleExportCSV}>
+            <Download className="size-4 mr-1.5" /> Export
+          </AdminButton>
+          <label className="cursor-pointer">
+            <div className="flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-4 text-sm font-medium transition-colors hover:bg-muted/50 text-foreground">
+              <UploadCloud className="size-4 mr-1.5" /> Import
+            </div>
+            <input type="file" accept=".csv" className="sr-only" onChange={handleImportCSV} />
+          </label>
+          <AdminButton onClick={startNew}>
+            <Plus className="size-4 mr-1.5" /> Add product
+          </AdminButton>
+        </div>
       </div>
 
       {editing && (
@@ -120,22 +230,16 @@ function AdminProducts() {
               </select>
             </label>
             <Field
-              label="Price (₹)"
-              type="number"
-              value={editing.draft.price}
-              onChange={(v) => update({ price: Number(v) })}
-            />
-            <Field
-              label="MRP (₹)"
-              type="number"
-              value={editing.draft.mrp}
-              onChange={(v) => update({ mrp: Number(v) })}
-            />
-            <Field
               label="Weight (g)"
               type="number"
               value={editing.draft.weight}
               onChange={(v) => update({ weight: Number(v) })}
+            />
+            <Field
+              label="Making charges / gm (₹)"
+              type="number"
+              value={editing.draft.makingCharges || 0}
+              onChange={(v) => update({ makingCharges: Number(v) })}
             />
             <Field
               label="Stock"
@@ -153,12 +257,31 @@ function AdminProducts() {
               value={editing.draft.badge ?? ""}
               onChange={(v) => update({ badge: v || undefined })}
             />
-            <Field
-              label="Image URL"
-              value={editing.draft.image}
-              placeholder="https://…"
-              onChange={(v) => update({ image: v })}
-            />
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Image</label>
+              <div className="flex items-center gap-3">
+                {editing.draft.image ? (
+                  <img src={editing.draft.image} alt="Preview" className="size-10 rounded object-cover border border-border" />
+                ) : (
+                  <div className="size-10 rounded border border-dashed border-border flex items-center justify-center bg-muted/30">
+                    <span className="text-[10px] text-muted-foreground">None</span>
+                  </div>
+                )}
+                <div className="flex-1 flex gap-2">
+                  <input
+                    type="text"
+                    value={editing.draft.image}
+                    placeholder="https://…"
+                    onChange={(e) => update({ image: e.target.value })}
+                    className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-maroon"
+                  />
+                  <label className="relative flex cursor-pointer items-center justify-center rounded-md border border-border bg-background px-3 py-1.5 text-sm transition-colors hover:bg-muted/50">
+                    {isUploadingImage ? <Loader2 className="size-4 animate-spin text-maroon" /> : <Upload className="size-4 text-muted-foreground" />}
+                    <input type="file" accept="image/*" className="sr-only" onChange={handleImageUpload} disabled={isUploadingImage} />
+                  </label>
+                </div>
+              </div>
+            </div>
             <TextArea
               label="Description"
               value={editing.draft.description}
@@ -166,6 +289,33 @@ function AdminProducts() {
               className="sm:col-span-2 lg:col-span-3"
             />
           </div>
+
+          <div className="mt-6 rounded-lg border border-maroon/20 bg-maroon-soft p-4 sm:p-5">
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-maroon">Price Preview Summary</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+              <div>
+                <p className="text-muted-foreground text-xs">Silver Rate</p>
+                <p className="font-semibold">{formatINR(silverRate)} / g</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Total Silver Amount</p>
+                <p className="font-semibold">{formatINR(editing.draft.weight * silverRate)}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Total Making Amount</p>
+                <p className="font-semibold">{formatINR(editing.draft.weight * (editing.draft.makingCharges || 0))}</p>
+              </div>
+              <div>
+                <p className="text-maroon text-xs font-semibold">Grand Total (inc. 5% GST)</p>
+                <p className="text-lg font-bold text-maroon">
+                  {formatINR(
+                    (editing.draft.weight * silverRate + editing.draft.weight * (editing.draft.makingCharges || 0)) * 1.05
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-5 flex gap-3">
             <AdminButton onClick={submit}>Save product</AdminButton>
             <AdminButton variant="ghost" onClick={() => setEditing(null)}>
@@ -204,7 +354,7 @@ function AdminProducts() {
               <tr className="text-left text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                 <th className="pb-3">Product</th>
                 <th className="pb-3">Category</th>
-                <th className="pb-3">Price</th>
+                <th className="pb-3">Making / gm</th>
                 <th className="pb-3">Weight</th>
                 <th className="pb-3">Stock</th>
                 <th className="pb-3 text-right">Actions</th>
@@ -220,7 +370,7 @@ function AdminProducts() {
                     </div>
                   </td>
                   <td className="py-3 text-muted-foreground">{p.categoryLabel}</td>
-                  <td className="py-3">{formatINR(p.price)}</td>
+                  <td className="py-3">{formatINR(p.makingCharges || 0)}</td>
                   <td className="py-3 text-muted-foreground">{p.weight}g</td>
                   <td className="py-3">
                     <span className={p.stock <= 5 ? "text-destructive" : "text-muted-foreground"}>

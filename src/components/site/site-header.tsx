@@ -95,7 +95,6 @@ export function SiteHeader() {
         { label: "My profile", to: "/account", Icon: UserRound },
         { label: "Address book", to: "/account", Icon: MapPin },
         { label: "Order history", to: "/orders", Icon: Package },
-        { label: "Track order", to: "/track", Icon: Truck },
       ] as const)
     : ([
         { label: "Sign in", to: "/login", Icon: UserRound },
@@ -162,7 +161,7 @@ export function SiteHeader() {
               <Search className="size-[18px]" />
             </button>
             <Link
-              to="/shop"
+              to="/wishlist"
               aria-label="Wishlist"
               className="hidden transition-opacity hover:opacity-60 sm:block"
             >

@@ -5,7 +5,7 @@ import { useCart } from "@/lib/cart";
 const items = [
   { label: "Home", to: "/", Icon: Home },
   { label: "Shop", to: "/shop", Icon: LayoutGrid },
-  { label: "Wishlist", to: "/shop", Icon: Heart },
+  { label: "Wishlist", to: "/wishlist", Icon: Heart },
 ] as const;
 
 export function MobileDock() {

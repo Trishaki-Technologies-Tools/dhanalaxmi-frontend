@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { api, setAuthToken, removeAuthToken } from "@/lib/api";
 
 /** Demo-only admin credentials. Replace with real backend auth later. */
 export const ADMIN_EMAIL = "admin@dhanalaxmi.com";
@@ -34,9 +35,8 @@ type AdminContextValue = {
   email: string | null;
   isAdmin: boolean;
   hydrated: boolean;
-  signIn: (email: string, password: string) => boolean;
+  signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => void;
-  /** Demo-only: rotate the locally stored admin credentials. */
   updateCredentials: (email: string, password?: string) => void;
 };
 
@@ -47,26 +47,38 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setEmail(raw);
-    } catch {
-      /* ignore */
+    async function init() {
+      try {
+        const token = window.localStorage.getItem("dj-auth-token");
+        if (token) {
+          const res = await api.auth.getProfile();
+          if (res.user && res.user.role === "ADMIN") {
+            setEmail(res.user.email);
+            setHydrated(true);
+            return;
+          }
+        }
+      } catch (err) {
+        /* ignore */
+      }
+      setEmail(null);
+      setHydrated(true);
     }
-    setHydrated(true);
+    init();
   }, []);
 
-  const signIn = useCallback((inputEmail: string, password: string) => {
-    const normalized = inputEmail.trim().toLowerCase();
-    const creds = readCreds();
-    if (normalized !== creds.email.toLowerCase() || password !== creds.password) return false;
-    setEmail(normalized);
+  const signIn = useCallback(async (inputEmail: string, password: string) => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, normalized);
-    } catch {
-      /* ignore */
+      const res = await api.auth.login({ email: inputEmail, password });
+      if (res.token && res.user && res.user.role === "ADMIN") {
+        setAuthToken(res.token);
+        setEmail(res.user.email);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
     }
-    return true;
   }, []);
 
   const updateCredentials = useCallback((nextEmail: string, nextPassword?: string) => {
@@ -86,11 +98,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(() => {
     setEmail(null);
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
-    }
+    removeAuthToken();
   }, []);
 
   const value = useMemo<AdminContextValue>(
