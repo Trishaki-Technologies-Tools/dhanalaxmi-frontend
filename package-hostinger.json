@@ -1,0 +1,13 @@
+{
+  "name": "dhanalaxmi-hostinger-deployment",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "postinstall": "cd backend && npm install --omit=dev && DATABASE_URL=\"mysql://u345018570_dhanalaxmi:Trishaki%40tech-dhanalaxmi%23304@127.0.0.1:3306/u345018570_dhanalaxmi\" npx prisma db push --accept-data-loss"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.0"
+  }
+}

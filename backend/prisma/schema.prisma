@@ -7,33 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  CUSTOMER
-  ADMIN
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
-}
-
-enum PaymentMethod {
-  UPI
-  RAZORPAY
-  CARD
-  COD
-}
-
 model User {
   id        Int        @id @default(autoincrement())
   email     String?    @unique
@@ -42,12 +15,12 @@ model User {
   phone     String     @unique
   birthday  DateTime?
   role      Role       @default(CUSTOMER)
-  orders    Order[]
-  reviews   Review[]
-  addresses Address[]
-  wishlist  Wishlist[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
+  wishlist  Wishlist[]
 }
 
 model Category {
@@ -56,9 +29,9 @@ model Category {
   name      String
   tagline   String?
   image     String?
-  products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 model Product {
@@ -66,89 +39,96 @@ model Product {
   slug          String      @unique
   name          String
   categoryId    Int?
-  category      Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categorySlug  String
   categoryLabel String
   price         Decimal     @db.Decimal(10, 2)
   mrp           Decimal     @db.Decimal(10, 2)
-  makingCharges Decimal     @default(0) @db.Decimal(10, 2)
+  makingCharges Decimal     @default(0.00) @db.Decimal(10, 2)
   image         String      @db.Text
   weight        Float
   metal         String      @default("925 Sterling Silver")
   occasion      String
   collection    String
   badge         String?
-  rating        Float       @default(5.0)
+  rating        Float       @default(5)
   reviewsCount  Int         @default(0)
   stock         Int         @default(10)
   popularity    Int         @default(50)
   description   String      @db.Text
   isFeatured    Boolean     @default(false)
-  orderItems    OrderItem[]
-  reviews       Review[]
-  wishlistedBy  Wishlist[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+  category      Category?   @relation(fields: [categoryId], references: [id])
+  reviews       Review[]
+  wishlistedBy  Wishlist[]
+
+  @@index([categoryId], map: "Product_categoryId_fkey")
 }
 
 model Order {
-  id              Int           @id @default(autoincrement())
-  orderNumber     String        @unique
-  userId          Int?
-  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  customerName    String
-  customerEmail   String
-  customerPhone   String
-  addressLine1    String
-  addressLine2    String?
-  city            String
-  state           String
-  pincode         String
-  totalAmount     Decimal       @db.Decimal(10, 2)
-  status          OrderStatus   @default(PENDING)
-  paymentStatus   PaymentStatus @default(PENDING)
-  paymentMethod   PaymentMethod @default(COD)
-  paymentId       String?
-  trackingNumber  String?
-  items           OrderItem[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id             Int           @id @default(autoincrement())
+  orderNumber    String        @unique
+  userId         Int?
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  addressLine1   String
+  addressLine2   String?
+  city           String
+  state          String
+  pincode        String
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  status         OrderStatus   @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  paymentMethod  PaymentMethod @default(COD)
+  paymentId      String?
+  trackingNumber String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User?         @relation(fields: [userId], references: [id])
+  items          OrderItem[]
+
+  @@index([userId], map: "Order_userId_fkey")
 }
 
 model OrderItem {
   id           Int      @id @default(autoincrement())
   orderId      Int
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId    Int?
-  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   productName  String
   productSlug  String
   productImage String   @db.Text
   price        Decimal  @db.Decimal(10, 2)
   quantity     Int
   total        Decimal  @db.Decimal(10, 2)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+  @@index([productId], map: "OrderItem_productId_fkey")
 }
-
-
 
 model Review {
   id        Int      @id @default(autoincrement())
   productId Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId    Int?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   userName  String
   rating    Int
   comment   String   @db.Text
   verified  Boolean  @default(true)
-  status    String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  status    String   @default("APPROVED")
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([productId], map: "Review_productId_fkey")
+  @@index([userId], map: "Review_userId_fkey")
 }
 
 model Address {
   id        Int      @id @default(autoincrement())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   label     String
   name      String
   phone     String
@@ -158,6 +138,9 @@ model Address {
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Address_userId_fkey")
 }
 
 model Banner {
@@ -191,12 +174,13 @@ model PromoTile {
 model Wishlist {
   id        Int      @id @default(autoincrement())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+  @@index([productId], map: "Wishlist_productId_fkey")
 }
 
 model SystemSetting {
@@ -205,16 +189,43 @@ model SystemSetting {
 }
 
 model Coupon {
-  id            Int      @id @default(autoincrement())
-  code          String   @unique
-  discountType  String   // "PERCENT" or "FLAT"
+  id            Int       @id @default(autoincrement())
+  code          String    @unique
+  discountType  String
   discountValue Float
   minOrderValue Float?
   maxDiscount   Float?
-  active        Boolean  @default(true)
+  active        Boolean   @default(true)
   usageLimit    Int?
-  usageCount    Int      @default(0)
+  usageCount    Int       @default(0)
   expiresAt     DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  RAZORPAY
+  CARD
+  COD
 }
