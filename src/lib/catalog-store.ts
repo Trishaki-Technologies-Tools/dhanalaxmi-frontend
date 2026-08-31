@@ -181,13 +181,16 @@ export async function hydrateCatalog() {
 
     // Fetch live products from MySQL backend API (with Cloudflare R2 images)
     try {
-      const response = await fetch("http://localhost:5001/api/products");
-      if (response.ok) {
-        const data = await response.json();
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+      const data = await api.products.getAll();
+      if (data && data.products && Array.isArray(data.products) && data.products.length > 0) {
           const apiProducts: Product[] = data.products.map((p: any) => {
             const localMatch = defaultProducts.find((lp) => lp.slug === p.slug);
-            const resolvedImage = p.image.startsWith("/assets/") && localMatch ? localMatch.image : p.image;
+            let resolvedImage = p.image;
+            if (resolvedImage && !resolvedImage.startsWith("http") && !resolvedImage.startsWith("/assets/")) {
+              resolvedImage = `https://pub-942d3ce481d44239b1d6082803b50b4c.r2.dev/${resolvedImage}`;
+            } else if (resolvedImage && resolvedImage.startsWith("/assets/") && localMatch) {
+              resolvedImage = localMatch.image;
+            }
             
             return {
               id: p.id,
@@ -214,8 +217,6 @@ export async function hydrateCatalog() {
           persist();
           emit();
         }
-      }
-
       // Fetch categories
       try {
         const catRes = await api.categories.getAll();
