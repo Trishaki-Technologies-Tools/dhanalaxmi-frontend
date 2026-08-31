@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env as any)["VITE_API_URL"] || "http://localhost:5001/api";
+const API_BASE = "https://dhanalaxmi-backend-production.up.railway.app/api";
 
 export function getAuthToken(): string | null {
   try {
