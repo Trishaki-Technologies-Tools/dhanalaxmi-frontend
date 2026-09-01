@@ -161,11 +161,21 @@ function AdminProducts() {
       return;
     }
     const category = categories.find((c) => c.slug === draft.category);
+    let finalPrice = draft.price;
+    let finalMrp = draft.mrp;
+    
+    if (!finalPrice || finalPrice === 0) {
+      finalPrice = Math.round((draft.weight * silverRate + draft.weight * (draft.makingCharges || 0)) * 1.05);
+      finalMrp = Math.round(finalPrice * 1.2);
+    }
+
     const next: Product = {
       ...draft,
       slug: draft.slug || slugify(draft.name),
       categoryLabel: category?.name ?? draft.categoryLabel,
       image: draft.image || category?.image || "",
+      price: finalPrice,
+      mrp: finalMrp,
     };
     saveProduct(next, editing.originalSlug);
     toast.success(editing.originalSlug ? "Product updated" : "Product added");
@@ -240,6 +250,18 @@ function AdminProducts() {
               type="number"
               value={editing.draft.makingCharges || 0}
               onChange={(v) => update({ makingCharges: Number(v) })}
+            />
+            <Field
+              label="Price (₹)"
+              type="number"
+              value={editing.draft.price || 0}
+              onChange={(v) => update({ price: Number(v) })}
+            />
+            <Field
+              label="MRP (₹)"
+              type="number"
+              value={editing.draft.mrp || 0}
+              onChange={(v) => update({ mrp: Number(v) })}
             />
             <Field
               label="Stock"
