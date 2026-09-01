@@ -114,12 +114,18 @@ function AdminProducts() {
           const category = categories.find(c => c.slug === draft.category) || categories[0];
           if (!category) continue;
           
+          const weight = Number(draft.weight) || 10;
+          const makingCharges = Number(draft.makingCharges) || 50;
+          const price = Math.round((weight * silverRate + weight * makingCharges) * 1.05);
+          
           const product: Product = {
             ...emptyProduct(category.slug, category.name),
             slug: draft.slug || slugify(draft.name),
             name: draft.name,
-            weight: Number(draft.weight) || 10,
-            makingCharges: Number(draft.makingCharges) || 50,
+            weight,
+            makingCharges,
+            price,
+            mrp: Math.round(price * 1.2),
             stock: Number(draft.stock) || 10,
             image: draft.image || category.image,
             description: draft.description || "",
@@ -243,13 +249,25 @@ function AdminProducts() {
               label="Weight (g)"
               type="number"
               value={editing.draft.weight}
-              onChange={(v) => update({ weight: Number(v) })}
+              onChange={(v) => {
+                const weight = Number(v);
+                const makingCharges = editing.draft.makingCharges || 0;
+                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.05);
+                const mrp = Math.round(price * 1.2);
+                update({ weight, price, mrp });
+              }}
             />
             <Field
               label="Making charges / gm (₹)"
               type="number"
               value={editing.draft.makingCharges || 0}
-              onChange={(v) => update({ makingCharges: Number(v) })}
+              onChange={(v) => {
+                const makingCharges = Number(v);
+                const weight = editing.draft.weight || 0;
+                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.05);
+                const mrp = Math.round(price * 1.2);
+                update({ makingCharges, price, mrp });
+              }}
             />
             <Field
               label="Price (₹)"
