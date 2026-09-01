@@ -199,18 +199,26 @@ function AdminProducts() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <AdminButton variant="outline" onClick={handleExportCSV}>
-            <Download className="size-4 mr-1.5" /> Export
-          </AdminButton>
-          <label className="cursor-pointer">
-            <div className="flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-4 text-sm font-medium transition-colors hover:bg-muted/50 text-foreground">
-              <UploadCloud className="size-4 mr-1.5" /> Import
-            </div>
-            <input type="file" accept=".csv" className="sr-only" onChange={handleImportCSV} />
-          </label>
-          <AdminButton onClick={startNew}>
-            <Plus className="size-4 mr-1.5" /> Add product
-          </AdminButton>
+          {editing ? (
+            <AdminButton onClick={submit}>
+              {editing.originalSlug ? "Update product" : "Add product"}
+            </AdminButton>
+          ) : (
+            <>
+              <AdminButton variant="outline" onClick={handleExportCSV}>
+                <Download className="size-4 mr-1.5" /> Export
+              </AdminButton>
+              <label className="cursor-pointer">
+                <div className="flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-4 text-sm font-medium transition-colors hover:bg-muted/50 text-foreground">
+                  <UploadCloud className="size-4 mr-1.5" /> Import
+                </div>
+                <input type="file" accept=".csv" className="sr-only" onChange={handleImportCSV} />
+              </label>
+              <AdminButton onClick={startNew}>
+                <Plus className="size-4 mr-1.5" /> Add product
+              </AdminButton>
+            </>
+          )}
         </div>
       </div>
 
