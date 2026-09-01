@@ -357,7 +357,9 @@ function AdminProducts() {
           </div>
 
           <div className="mt-5 flex gap-3">
-            <AdminButton onClick={submit}>Save product</AdminButton>
+            <AdminButton onClick={submit}>
+              {editing.originalSlug ? "Update product" : "Add product"}
+            </AdminButton>
             <AdminButton variant="ghost" onClick={() => setEditing(null)}>
               Cancel
             </AdminButton>
@@ -396,6 +398,7 @@ function AdminProducts() {
                 <th className="pb-3">Category</th>
                 <th className="pb-3">Making / gm</th>
                 <th className="pb-3">Weight</th>
+                <th className="pb-3">Total Amt</th>
                 <th className="pb-3">Stock</th>
                 <th className="pb-3 text-right">Actions</th>
               </tr>
@@ -412,6 +415,7 @@ function AdminProducts() {
                   <td className="py-3 text-muted-foreground">{p.categoryLabel}</td>
                   <td className="py-3">{formatINR(p.makingCharges || 0)}</td>
                   <td className="py-3 text-muted-foreground">{p.weight}g</td>
+                  <td className="py-3 font-semibold text-maroon">{formatINR(p.price || 0)}</td>
                   <td className="py-3">
                     <span className={p.stock <= 5 ? "text-destructive" : "text-muted-foreground"}>
                       {p.stock}
