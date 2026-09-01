@@ -377,6 +377,22 @@ function CheckoutPage() {
 
             <dl className="mt-6 space-y-2 border-t border-border pt-5 text-sm">
               <div className="flex justify-between">
+                <dt className="text-muted-foreground">Total Weight</dt>
+                <dd className="font-medium">{items.reduce((acc, { product, qty }) => acc + (product.weight || 0) * qty, 0).toFixed(2)}g</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Making Charges</dt>
+                <dd className="font-price">
+                  {formatINR(items.reduce((acc, { product, qty }) => acc + (product.makingCharges || 0) * (product.weight || 0) * qty, 0))}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">GST (5%)</dt>
+                <dd className="font-price">
+                  {formatINR(subtotal - (subtotal / 1.05))}
+                </dd>
+              </div>
+              <div className="flex justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
                 <dd className="font-price">{formatINR(subtotal)}</dd>
               </div>
