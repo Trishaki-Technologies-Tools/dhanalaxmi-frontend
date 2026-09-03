@@ -7,8 +7,10 @@ import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 
 export function CartDrawer() {
-  const { open, setOpen, items, count, subtotal, savings, setQty, remove, clear } = useCart();
+  const { open, setOpen, items, count, subtotal, savings, remove, clear } = useCart();
   const { toggle } = useWishlist();
+
+  const hasOutOfStock = items.some((item) => item.product.stock <= 0);
 
   return (
     <AnimatePresence>
@@ -70,13 +72,20 @@ export function CartDrawer() {
                         to="/product/$slug"
                         params={{ slug: product.slug }}
                         onClick={() => setOpen(false)}
-                        className="shrink-0 overflow-hidden rounded-lg border border-border bg-pearl"
+                        className="shrink-0 relative overflow-hidden rounded-lg border border-border bg-pearl"
                       >
+                        {product.stock <= 0 && (
+                          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
+                            <span className="text-[8px] font-bold text-white bg-maroon px-1.5 py-0.5 uppercase tracking-wider">
+                              SOLD
+                            </span>
+                          </div>
+                        )}
                         {product.image ? (
                           <img
                             src={product.image}
                             alt={product.name}
-                            className="size-20 object-cover"
+                            className={`size-20 object-cover ${product.stock <= 0 ? 'grayscale opacity-75' : ''}`}
                           />
                         ) : (
                           <div className="size-20 flex items-center justify-center bg-muted/30 text-[10px] uppercase tracking-widest text-muted-foreground border border-dashed border-border/50">
@@ -89,25 +98,13 @@ export function CartDrawer() {
                           {product.categoryLabel}
                         </p>
                         <p className="line-clamp-1 text-sm">{product.name}</p>
-                        <p className="font-price text-sm">{formatINR(lineTotal)}</p>
-                        <div className="mt-2 flex items-center gap-3">
-                          <div className="flex items-center rounded-full border border-border">
-                            <button
-                              aria-label="Decrease quantity"
-                              onClick={() => setQty(product.slug, qty - 1)}
-                              className="flex size-7 items-center justify-center rounded-full transition-colors hover:text-maroon"
-                            >
-                              <Minus className="size-3" />
-                            </button>
-                            <span className="w-6 text-center text-xs">{qty}</span>
-                            <button
-                              aria-label="Increase quantity"
-                              onClick={() => setQty(product.slug, qty + 1)}
-                              className="flex size-7 items-center justify-center rounded-full transition-colors hover:text-maroon"
-                            >
-                              <Plus className="size-3" />
-                            </button>
-                          </div>
+                        <p className={`font-price text-sm ${product.stock <= 0 ? 'text-muted-foreground line-through' : ''}`}>
+                          {formatINR(lineTotal)}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                            Qty: 1
+                          </span>
                           <button
                             aria-label={`Remove ${product.name}`}
                             onClick={() => {
@@ -152,10 +149,10 @@ export function CartDrawer() {
                     </div>
                     <div className="flex items-baseline justify-between">
                       <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                        GST (5%)
+                        GST (3%)
                       </span>
                       <span className="text-sm font-medium">
-                        {formatINR(subtotal - (subtotal / 1.05))}
+                        {formatINR(subtotal - (subtotal / 1.03))}
                       </span>
                     </div>
                   </div>
@@ -173,13 +170,27 @@ export function CartDrawer() {
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     Free insured shipping · Inclusive of all taxes
                   </p>
-                  <Link
-                    to="/checkout"
-                    onClick={() => setOpen(false)}
-                    className="mt-5 block w-full rounded-full bg-primary py-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
-                  >
-                    Checkout
-                  </Link>
+                  {hasOutOfStock && (
+                    <p className="mt-4 text-[11px] font-semibold text-maroon text-center">
+                      Please remove sold items to proceed to checkout.
+                    </p>
+                  )}
+                  {hasOutOfStock ? (
+                    <button
+                      disabled
+                      className="mt-3 block w-full rounded-full bg-muted py-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground cursor-not-allowed"
+                    >
+                      Checkout
+                    </button>
+                  ) : (
+                    <Link
+                      to="/checkout"
+                      onClick={() => setOpen(false)}
+                      className="mt-5 block w-full rounded-full bg-primary py-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep"
+                    >
+                      Checkout
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       clear();

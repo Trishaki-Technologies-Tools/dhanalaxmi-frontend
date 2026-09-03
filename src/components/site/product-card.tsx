@@ -9,6 +9,7 @@ export function ProductCard({ product }: { product: Product }) {
   const off = Math.round(((product.mrp - product.price) / product.mrp) * 100);
   const { add, setOpen } = useCart();
   const { toggle, has } = useWishlist();
+  const isSoldOut = product.stock <= 0;
 
   return (
     <Link
@@ -17,6 +18,13 @@ export function ProductCard({ product }: { product: Product }) {
       className="group block overflow-hidden rounded-xl border border-border bg-card transition-[transform,box-shadow,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-maroon hover:shadow-luxe"
     >
       <div className="shine-sweep relative overflow-hidden bg-pearl">
+        {isSoldOut && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-[1px] pointer-events-none">
+            <span className="text-[10px] font-bold text-white bg-maroon px-2 py-1 uppercase tracking-wider">
+              Out of Stock
+            </span>
+          </div>
+        )}
         {product.image ? (
           <img
             src={product.image}
@@ -24,7 +32,7 @@ export function ProductCard({ product }: { product: Product }) {
             loading="lazy"
             width={700}
             height={900}
-            className="aspect-[3/4] w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+            className={`aspect-[3/4] w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] ${isSoldOut ? 'grayscale' : ''}`}
           />
         ) : (
           <div className="aspect-[3/4] w-full flex items-center justify-center bg-muted/30 border border-dashed border-border/50">
@@ -56,20 +64,26 @@ export function ProductCard({ product }: { product: Product }) {
             <Eye className="size-3.5" />
           </span>
         </span>
-        <span
-          role="button"
-          tabIndex={0}
-          aria-label={`Add ${product.name} to bag`}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            add(product.slug);
-            setOpen(true);
-          }}
-          className="btn-luxe absolute inset-x-2 bottom-2 flex translate-y-4 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-primary px-2 py-2 text-[11px] text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon-deep active:bg-maroon-deep"
-        >
-          <ShoppingBag className="size-3" /> Add to bag
-        </span>
+        {!isSoldOut ? (
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={`Add ${product.name} to bag`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              add(product.slug);
+              setOpen(true);
+            }}
+            className="btn-luxe absolute inset-x-2 bottom-2 z-20 flex translate-y-4 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-primary px-2 py-2 text-[11px] text-primary-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-maroon-deep active:bg-maroon-deep"
+          >
+            <ShoppingBag className="size-3" /> Add to bag
+          </span>
+        ) : (
+          <span className="btn-luxe absolute inset-x-2 bottom-2 z-20 flex translate-y-4 items-center justify-center gap-1.5 rounded-full bg-muted px-2 py-2 text-[11px] font-semibold text-muted-foreground opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+            Sold Out
+          </span>
+        )}
       </div>
       <div className="space-y-1 p-3">
         <p className="text-[8px] uppercase tracking-[0.2em] text-maroon">
@@ -81,11 +95,15 @@ export function ProductCard({ product }: { product: Product }) {
           {product.rating.toFixed(1)} · {product.reviews} reviews
         </div>
         <div className="flex flex-wrap items-baseline gap-1.5 pt-0.5">
-          <span className="font-price text-base">{formatINR(product.price)}</span>
+          <span className={`font-price text-base ${isSoldOut ? 'text-muted-foreground line-through' : ''}`}>
+            {formatINR(product.price)}
+          </span>
           <span className="text-[10px] text-muted-foreground line-through">
             {formatINR(product.mrp)}
           </span>
-          <span className="text-[9px] font-semibold text-maroon">{off}% off</span>
+          <span className={`text-[9px] font-semibold ${isSoldOut ? 'text-muted-foreground' : 'text-maroon'}`}>
+            {off}% off
+          </span>
         </div>
       </div>
     </Link>

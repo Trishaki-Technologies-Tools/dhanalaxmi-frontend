@@ -71,6 +71,7 @@ function SearchPage() {
       }))
       .filter(({ product, relevance }) => {
         if (terms.length > 0 && relevance === 0) return false;
+        if (product.stock <= 0) return false;
         if (product.price > maxPrice) return false;
         if (cats.length > 0 && !cats.includes(product.category)) return false;
         if (occ.length > 0 && !occ.includes(product.occasion)) return false;

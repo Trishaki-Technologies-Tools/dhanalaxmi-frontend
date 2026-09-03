@@ -214,6 +214,31 @@ function Index() {
       <section className="bg-background py-20 lg:py-28">
         <div className="mx-auto max-w-[88rem] px-6 lg:px-10">
           <div className="flex flex-wrap items-end justify-between gap-6">
+            <SectionHeading eyebrow="Most Loved" title="Patron favorites" align="left" />
+            <Link
+              to="/shop"
+              className="btn-luxe flex items-center gap-2 border-b border-maroon/30 pb-1 text-maroon transition-colors hover:border-maroon"
+            >
+              Shop trending <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[...products]
+              .filter(p => p.stock > 0)
+              .sort((a, b) => b.popularity - a.popularity)
+              .slice(0, 4)
+              .map((p, i) => (
+              <Reveal key={p.slug} delay={i * 0.06}>
+                <ProductCard product={p} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-mist py-20 lg:py-28">
+        <div className="mx-auto max-w-[88rem] px-6 lg:px-10">
+          <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionHeading eyebrow="New Arrivals" title="Fresh from the atelier" align="left" />
             <Link
               to="/shop"
@@ -223,7 +248,7 @@ function Index() {
             </Link>
           </div>
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {products.slice(4, 8).map((p, i) => (
+            {products.filter(p => p.stock > 0).slice(0, 4).map((p, i) => (
               <Reveal key={p.slug} delay={i * 0.06}>
                 <ProductCard product={p} />
               </Reveal>

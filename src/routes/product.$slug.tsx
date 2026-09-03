@@ -58,7 +58,8 @@ function ProductPage() {
   const { toggle, has } = useWishlist();
   const navigate = useNavigate();
   const gallery = [product.image, product.image, product.image, product.image];
-  const related = products.filter((p) => p.slug !== product.slug).slice(0, 4);
+  const related = products.filter((p) => p.slug !== product.slug && p.stock > 0).slice(0, 4);
+  const isSoldOut = product.stock <= 0;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -154,14 +155,21 @@ function ProductPage() {
 
             <div className="mt-10 flex flex-wrap gap-4">
               <button
+                disabled={isSoldOut}
                 onClick={() => {
+                  if (isSoldOut) return;
                   add(product.slug);
                   setOpen(true);
                   toast.success(`${product.name} added to your bag.`);
                 }}
-                className="h-14 flex-1 rounded-full bg-primary px-8 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground shadow-luxe transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
+                className={cn(
+                  "h-14 flex-1 rounded-full px-8 text-xs font-semibold uppercase tracking-[0.2em] shadow-luxe transition-colors",
+                  isSoldOut 
+                    ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                    : "bg-primary text-primary-foreground hover:bg-maroon-deep active:bg-maroon-deep"
+                )}
               >
-                Add to bag
+                {isSoldOut ? "Out of Stock" : "Add to bag"}
               </button>
               <button
                 onClick={() => product.id && toggle(product.id, product.name)}
@@ -251,13 +259,20 @@ function ProductPage() {
           <p className="font-price text-xl">{formatINR(product.price)}</p>
         </div>
         <button
+          disabled={isSoldOut}
           onClick={() => {
+            if (isSoldOut) return;
             add(product.slug);
             navigate({ to: "/checkout" });
           }}
-          className="rounded-full bg-primary px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-maroon-deep active:bg-maroon-deep disabled:opacity-50"
+          className={cn(
+            "rounded-full px-7 py-3.5 text-xs font-semibold uppercase tracking-[0.18em] transition-colors",
+            isSoldOut
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:bg-maroon-deep active:bg-maroon-deep"
+          )}
         >
-          Buy now
+          {isSoldOut ? "Sold" : "Buy now"}
         </button>
       </div>
     </div>

@@ -108,8 +108,8 @@ function AdminInvoice() {
                 <span>{formatINR(Number(order.totalAmount))}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>GST (5%) Included</span>
-                <span>{formatINR(Number(order.totalAmount) * 0.05)}</span>
+                <span>GST (3%) Included</span>
+                <span>{formatINR(Number(order.totalAmount) * 0.03)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>

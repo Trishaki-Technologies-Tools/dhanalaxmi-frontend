@@ -12,6 +12,7 @@ import {
   Users,
   MessageSquare,
   TicketPercent,
+  Store
 } from "lucide-react";
 import { useAdmin } from "@/lib/admin";
 import { api } from "@/lib/api";
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/admin")({
 const nav = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { to: "/admin/store-purchase", label: "Store Purchase", icon: Store },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/categories", label: "Categories", icon: Tags },
   { to: "/admin/banners", label: "Banners & Promos", icon: Images },
@@ -91,7 +93,7 @@ function AdminLayout() {
   return (
     <div className="min-h-screen bg-pearl">
       <div className="mx-auto flex max-w-[100rem] flex-col lg:flex-row">
-        <aside className="bg-maroon text-primary-foreground lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0 lg:flex lg:flex-col">
+        <aside className="bg-maroon text-primary-foreground lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0 lg:flex lg:flex-col lg:overflow-y-auto scrollbar-none">
           <div className="flex items-center justify-between px-6 py-6">
             <div>
               <p className="font-display text-lg leading-none">Dhanalaxmi</p>

@@ -202,15 +202,16 @@ export async function hydrateCatalog() {
               mrp: Number(p.mrp) || Math.round((Number(p.price) || 0) * 1.2),
               image: resolvedImage,
               weight: Number(p.weight) || 10.0,
+              makingCharges: Number(p.makingCharges) || (Math.floor(Math.random() * 21) + 40),
               metal: p.metal || "925 Sterling Silver",
               occasion: p.occasion || "Everyday",
               collection: p.collection || "Signature",
-            badge: p.badge || undefined,
-            rating: Number(p.rating) || 4.8,
-            reviews: Number(p.reviewsCount ?? p.reviews) || 24,
-            stock: Number(p.stock) || 20,
-            popularity: Number(p.popularity) || 85,
-            description: p.description || "Crafted in 925 hallmarked sterling silver.",
+              badge: p.badge || undefined,
+              rating: Number(p.rating) || 4.8,
+              reviews: Number(p.reviewsCount ?? p.reviews) || 24,
+              stock: Number(p.stock) || 20,
+              popularity: Number(p.popularity) || 85,
+              description: p.description || "Crafted in 925 hallmarked sterling silver.",
             };
           });
           state = { ...state, products: apiProducts };

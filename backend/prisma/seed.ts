@@ -26,7 +26,7 @@ const products = [
     weight: 14.8,
     occasion: "Everyday",
     collection: "Signature",
-    badge: "Bestseller",
+    badge: "Most Loved",
     description: "Crafted in 925 hallmarked sterling silver and hand-polished across 14 stages.",
   },
   {
@@ -40,7 +40,7 @@ const products = [
     weight: 6.2,
     occasion: "Wedding",
     collection: "Wedding",
-    badge: "Bestseller",
+    badge: "Most Loved",
     description: "Crafted in 925 hallmarked sterling silver and hand-polished across 14 stages.",
   },
   {
@@ -68,7 +68,7 @@ const products = [
     weight: 42.5,
     occasion: "Everyday",
     collection: "Signature",
-    badge: "Bestseller",
+    badge: "Most Loved",
     description: "Crafted in 925 hallmarked sterling silver and hand-polished across 14 stages.",
   },
   {
@@ -82,7 +82,7 @@ const products = [
     weight: 24.6,
     occasion: "Festive",
     collection: "Signature",
-    badge: "Bestseller",
+    badge: "Most Loved",
     description: "Crafted in 925 hallmarked sterling silver and hand-polished across 14 stages.",
   },
   {

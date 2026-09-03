@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Facebook, Youtube, MessageCircle } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const columns = [
   {
@@ -26,8 +27,18 @@ export function SiteFooter() {
       <div className="mx-auto max-w-[88rem] px-6 py-20 lg:px-10 lg:py-24">
         <div className="grid gap-14 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div className="max-w-sm">
-            <p className="font-display text-4xl">Dhanalaxmi Jeweler&apos;s</p>
-            <p className="mt-3 text-[9px] uppercase tracking-[0.42em] text-silver">
+            <div className="flex items-center gap-3">
+              <img src={logo} alt="Dhanalaxmi Logo" className="h-12 w-auto object-contain" />
+              <div className="flex flex-col items-center leading-none pt-1">
+                <span className="font-['Cinzel',_serif] text-2xl font-bold tracking-[0.05em]">
+                  DHANALAXMI
+                </span>
+                <span className="mt-1 font-['Cinzel',_serif] text-[10px] font-semibold tracking-[0.42em] text-silver">
+                  JEWELLERS
+                </span>
+              </div>
+            </div>
+            <p className="mt-4 text-[9px] uppercase tracking-[0.42em] text-silver">
               Sterling silver since 1978
             </p>
             <p className="mt-6 text-sm leading-relaxed opacity-65">

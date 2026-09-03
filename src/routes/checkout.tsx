@@ -63,6 +63,8 @@ function CheckoutPage() {
   const [processing, setProcessing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const hasOutOfStock = items.some((item) => item.product.stock <= 0);
+
   const [couponInput, setCouponInput] = useState("");
   const [couponError, setCouponError] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
@@ -325,17 +327,28 @@ function CheckoutPage() {
             <h2 className="font-display text-2xl">Order summary</h2>
             <div className="mt-6 space-y-4">
               {items.map(({ product, qty, lineTotal }) => (
-                <div key={product.slug} className="flex gap-3">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="size-16 shrink-0 rounded-lg border border-border object-cover"
-                  />
+                <div key={product.slug} className={`flex gap-3 ${product.stock <= 0 ? 'opacity-75' : ''}`}>
+                  <div className="relative size-16 shrink-0 rounded-lg border border-border bg-pearl overflow-hidden">
+                    {product.stock <= 0 && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
+                        <span className="text-[7px] font-bold text-white bg-maroon px-1 py-0.5 uppercase tracking-wider">
+                          SOLD
+                        </span>
+                      </div>
+                    )}
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className={`size-full object-cover ${product.stock <= 0 ? 'grayscale' : ''}`}
+                    />
+                  </div>
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-1 text-sm">{product.name}</p>
-                    <p className="text-[11px] text-muted-foreground">Qty {qty}</p>
+                    <p className="text-[11px] text-muted-foreground">Qty: 1</p>
                   </div>
-                  <p className="font-price text-sm">{formatINR(lineTotal)}</p>
+                  <p className={`font-price text-sm ${product.stock <= 0 ? 'text-muted-foreground line-through' : ''}`}>
+                    {formatINR(lineTotal)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -387,9 +400,9 @@ function CheckoutPage() {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">GST (5%)</dt>
+                <dt className="text-muted-foreground">GST (3%)</dt>
                 <dd className="font-price">
-                  {formatINR(subtotal - (subtotal / 1.05))}
+                  {formatINR(subtotal - (subtotal / 1.03))}
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -426,7 +439,7 @@ function CheckoutPage() {
 
             <motion.button
               type="submit"
-              disabled={processing}
+              disabled={processing || hasOutOfStock}
               whileTap={{ scale: 0.98 }}
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-maroon-deep disabled:opacity-70"
             >
@@ -440,6 +453,11 @@ function CheckoutPage() {
                 `Pay ${formatINR(total)}`
               )}
             </motion.button>
+            {hasOutOfStock && (
+              <p className="mt-3 text-center text-[11px] font-semibold text-maroon">
+                Remove sold items from your bag to proceed.
+              </p>
+            )}
 
             <ul className="mt-5 space-y-2 text-[11px] text-muted-foreground">
               <li className="flex items-center gap-2">

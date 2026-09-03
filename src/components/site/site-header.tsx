@@ -19,6 +19,7 @@ import { categories } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
+import logo from "@/assets/logo.png";
 
 const announcements = [
   "Complimentary insured shipping across India",
@@ -121,13 +122,16 @@ export function SiteHeader() {
             {mobile ? <Menu className="size-5" /> : <Menu className="size-5" />}
           </button>
 
-          <Link to="/" className="flex flex-col leading-none">
-            <span className="font-display text-2xl tracking-[0.02em] sm:text-[1.75rem]">
-              Dhanalaxmi
-            </span>
-            <span className="mt-1 text-[9px] uppercase tracking-[0.42em] text-silver">
-              Jeweler&apos;s · 925
-            </span>
+          <Link to="/" className="flex items-center gap-2 sm:gap-3">
+            <img src={logo} alt="Dhanalaxmi Logo" className="h-9 sm:h-12 w-auto object-contain" />
+            <div className="flex flex-col items-center leading-none pt-1">
+              <span className="font-['Cinzel',_serif] text-base font-bold tracking-[0.05em] sm:text-xl">
+                DHANALAXMI
+              </span>
+              <span className="mt-1 font-['Cinzel',_serif] text-[6.5px] sm:text-[8.5px] font-semibold tracking-[0.42em] text-silver">
+                JEWELLERS
+              </span>
+            </div>
           </Link>
 
           <nav className="mx-auto hidden items-center gap-8 lg:flex">
@@ -336,43 +340,57 @@ export function SiteHeader() {
 
       <AnimatePresence>
         {mobile ? (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden border-b border-border bg-background text-foreground lg:hidden"
-          >
-            <div className="flex items-center justify-between px-6 py-4">
-              <span className="text-eyebrow">Menu</span>
-              <button aria-label="Close menu" onClick={() => setMobile(false)}>
-                <X className="size-4" />
-              </button>
-            </div>
-            <ul className="px-6 pb-8">
-              {nav.map((item) => (
-                <li key={item.label} className="border-t border-border/70">
-                  <Link
-                    to={item.to}
-                    onClick={() => setMobile(false)}
-                    className="block py-4 text-sm uppercase tracking-[0.2em]"
-                  >
-                    {item.label}
-                  </Link>
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobile(false)}
+              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="fixed inset-y-0 left-0 z-50 w-[80vw] max-w-sm overflow-y-auto border-r border-border bg-background text-foreground shadow-luxe lg:hidden"
+            >
+              <div className="flex items-center justify-between px-6 py-6 border-b border-border">
+                <span className="text-eyebrow">Menu</span>
+                <button aria-label="Close menu" onClick={() => setMobile(false)}>
+                  <X className="size-5" />
+                </button>
+              </div>
+              <ul className="px-6 py-4">
+                {nav.map((item) => (
+                  <li key={item.label} className="border-b border-border/70 last:border-0">
+                    <Link
+                      to={item.to}
+                      onClick={() => setMobile(false)}
+                      className="block py-4 text-sm uppercase tracking-[0.2em]"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+                
+                <li className="mt-8 mb-2">
+                  <span className="text-eyebrow">Account</span>
                 </li>
-              ))}
-              {accountLinks.map(({ label, to }) => (
-                <li key={label} className="border-t border-border/70">
-                  <Link
-                    to={to}
-                    onClick={() => setMobile(false)}
-                    className="block py-4 text-sm uppercase tracking-[0.2em] text-maroon"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
+                {accountLinks.map(({ label, to }) => (
+                  <li key={label} className="border-b border-border/70 last:border-0">
+                    <Link
+                      to={to}
+                      onClick={() => setMobile(false)}
+                      className="block py-4 text-sm uppercase tracking-[0.2em] text-maroon"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </>
         ) : null}
       </AnimatePresence>
     </header>

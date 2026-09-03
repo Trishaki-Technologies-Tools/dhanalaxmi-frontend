@@ -66,6 +66,7 @@ function ShopPage() {
     const filtered = products.filter(
       (p) =>
         p.price <= maxPrice &&
+        p.stock > 0 &&
         (cats.length === 0 || cats.includes(p.category)) &&
         (occ.length === 0 || occ.includes(p.occasion)),
     );
@@ -208,8 +209,8 @@ function ShopPage() {
           ) : (
             <div
               className={cn(
-                "mt-10 grid gap-5",
-                view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 max-w-2xl",
+                "mt-10 grid gap-3 sm:gap-5",
+                view === "grid" ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 max-w-2xl",
               )}
             >
               {visible.map((p, i) => (

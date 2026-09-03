@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { products, type Product } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { useAuth } from "@/lib/auth";
 
 export type CartLine = { slug: string; qty: number };
@@ -61,6 +62,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const { phone } = useAuth();
   
+  // Use dynamically loaded products from the catalog store instead of the static list!
+  const { products: dynamicProducts } = useCatalog();
+  
   const storageKey = phone ? `${BASE_STORAGE_KEY}-${phone}` : `${BASE_STORAGE_KEY}-guest`;
 
   useEffect(() => {
@@ -78,15 +82,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [lines, hydrated, storageKey]);
 
-  const add = useCallback((slug: string, qty = 1) => {
+  const add = useCallback((slug: string) => {
     setLines((prev) => {
       const existing = prev.find((l) => l.slug === slug);
       if (existing) {
-        return prev.map((l) =>
-          l.slug === slug ? { ...l, qty: Math.min(99, l.qty + qty) } : l,
-        );
+        return prev; // Do nothing if already in cart
       }
-      return [...prev, { slug, qty: Math.min(99, Math.max(1, qty)) }];
+      return [...prev, { slug, qty: 1 }];
     });
   }, []);
 
@@ -106,12 +108,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const items = lines.flatMap((l) => {
-      const product = products.find((p) => p.slug === l.slug);
+      const product = dynamicProducts.find((p) => p.slug === l.slug);
       if (!product) return [];
-      return [{ product, qty: l.qty, lineTotal: product.price * l.qty }];
+      return [{ product, qty: 1, lineTotal: product.price }];
     });
     const subtotal = items.reduce((s, i) => s + i.lineTotal, 0);
-    const savings = items.reduce((s, i) => s + (i.product.mrp - i.product.price) * i.qty, 0);
+    const savings = items.reduce((s, i) => s + ((i.product.mrp || 0) - (i.product.price || 0)) * i.qty, 0);
     
     let discount = 0;
     if (coupon) {
@@ -140,7 +142,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       applyCoupon: setCoupon,
       discount,
     };
-  }, [lines, open, add, remove, setQty, clear, coupon]);
+  }, [lines, open, add, remove, setQty, clear, coupon, dynamicProducts]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

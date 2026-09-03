@@ -116,7 +116,7 @@ function AdminProducts() {
           
           const weight = Number(draft.weight) || 10;
           const makingCharges = Number(draft.makingCharges) || 50;
-          const price = Math.round((weight * silverRate + weight * makingCharges) * 1.05);
+          const price = Math.round((weight * silverRate + weight * makingCharges) * 1.03);
           
           const product: Product = {
             ...emptyProduct(category.slug, category.name),
@@ -171,7 +171,7 @@ function AdminProducts() {
     let finalMrp = draft.mrp;
     
     if (!finalPrice || finalPrice === 0) {
-      finalPrice = Math.round((draft.weight * silverRate + draft.weight * (draft.makingCharges || 0)) * 1.05);
+      finalPrice = Math.round((draft.weight * silverRate + draft.weight * (draft.makingCharges || 0)) * 1.03);
       finalMrp = Math.round(finalPrice * 1.2);
     }
 
@@ -260,7 +260,7 @@ function AdminProducts() {
               onChange={(v) => {
                 const weight = Number(v);
                 const makingCharges = editing.draft.makingCharges || 0;
-                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.05);
+                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.03);
                 const mrp = Math.round(price * 1.2);
                 update({ weight, price, mrp });
               }}
@@ -272,7 +272,7 @@ function AdminProducts() {
               onChange={(v) => {
                 const makingCharges = Number(v);
                 const weight = editing.draft.weight || 0;
-                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.05);
+                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.03);
                 const mrp = Math.round(price * 1.2);
                 update({ makingCharges, price, mrp });
               }}
@@ -354,10 +354,10 @@ function AdminProducts() {
                 <p className="font-semibold">{formatINR(editing.draft.weight * (editing.draft.makingCharges || 0))}</p>
               </div>
               <div>
-                <p className="text-maroon text-xs font-semibold">Grand Total (inc. 5% GST)</p>
+                <p className="text-maroon text-xs font-semibold">Grand Total (inc. 3% GST)</p>
                 <p className="text-lg font-bold text-maroon">
                   {formatINR(
-                    (editing.draft.weight * silverRate + editing.draft.weight * (editing.draft.makingCharges || 0)) * 1.05
+                    (editing.draft.weight * silverRate + editing.draft.weight * (editing.draft.makingCharges || 0)) * 1.03
                   )}
                 </p>
               </div>

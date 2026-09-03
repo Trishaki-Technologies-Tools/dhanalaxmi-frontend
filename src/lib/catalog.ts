@@ -94,7 +94,7 @@ export type Product = {
 
 const base: Array<[string, string, string, number, number, string, number, string, string?]> = [
   // Bracelets
-  ["Nithya Cuff Bracelet", "bracelets", "Bracelets", 5990, 7200, pBrac1, 14.8, "Everyday", "Bestseller"],
+  ["Nithya Cuff Bracelet", "bracelets", "Bracelets", 5990, 7200, pBrac1, 14.8, "Everyday", "Most Loved"],
   ["Mira Charm Bracelet", "bracelets", "Bracelets", 4490, 5400, pBrac2, 11.2, "Gifting"],
   ["Ira Braided Bracelet", "bracelets", "Bracelets", 3890, 4700, pBrac3, 9.6, "Everyday"],
   ["Saanvi Beaded Bangle", "bracelets", "Bracelets", 4190, 5100, pBrac4, 10.4, "Festive", "New"],
@@ -108,21 +108,21 @@ const base: Array<[string, string, string, number, number, string, number, strin
   ["Arjun Figaro Chain", "chains", "Silver Chains", 6490, 7700, pChain5, 19.2, "Everyday"],
   ["Rohan Snake Chain", "chains", "Silver Chains", 5890, 7000, pChain6, 16.4, "Gifting"],
   // Rings
-  ["Aarohi Eternity Band", "rings", "Silver Rings", 4290, 5200, pRing1, 6.2, "Wedding", "Bestseller"],
+  ["Aarohi Eternity Band", "rings", "Silver Rings", 4290, 5200, pRing1, 6.2, "Wedding", "Most Loved"],
   ["Vaidehi Stackable Ring", "rings", "Silver Rings", 2190, 2700, pRing2, 3.1, "Everyday", "New"],
   ["Kavya Bridal Ring Set", "rings", "Silver Rings", 11900, 14500, pRing3, 15.4, "Wedding", "Trending"],
   ["Advik Signet Ring", "rings", "Silver Rings", 5490, 6500, pRing4, 9.8, "Everyday"],
   ["Riya Twisted Rope Ring", "rings", "Silver Rings", 2790, 3400, pRing5, 4.0, "Gifting"],
   ["Anvi Engraved Band", "rings", "Silver Rings", 3490, 4200, pRing6, 5.6, "Festive"],
   // Earrings
-  ["Meera Teardrop Earrings", "earrings", "Earrings", 3450, 4100, pEar1, 5.1, "Festive", "Bestseller"],
+  ["Meera Teardrop Earrings", "earrings", "Earrings", 3450, 4100, pEar1, 5.1, "Festive", "Most Loved"],
   ["Tara Hoop Earrings", "earrings", "Earrings", 2790, 3300, pEar2, 4.2, "Everyday"],
   ["Nyra Solitaire Studs", "earrings", "Earrings", 2290, 2800, pEar3, 2.6, "Everyday", "New"],
   ["Reva Temple Jhumkas", "earrings", "Earrings", 6890, 8200, pEar4, 12.8, "Temple", "Trending"],
   ["Kiara Huggie Hoops", "earrings", "Earrings", 1990, 2400, pEar5, 2.2, "Everyday"],
   ["Saira Pearl Drops", "earrings", "Earrings", 3990, 4700, pEar6, 4.8, "Gifting"],
   // Pendants
-  ["Ishira Solitaire Pendant", "pendants", "Pendants", 4590, 5500, pPen1, 5.8, "Gifting", "Bestseller"],
+  ["Ishira Solitaire Pendant", "pendants", "Pendants", 4590, 5500, pPen1, 5.8, "Gifting", "Most Loved"],
   ["Rudra Temple Pendant", "pendants", "Pendants", 2890, 3600, pPen2, 4.4, "Temple", "New"],
   ["Anika Heart Pendant", "pendants", "Pendants", 2490, 3000, pPen3, 3.6, "Gifting"],
   ["Ojas Engraved Locket", "pendants", "Pendants", 5290, 6300, pPen4, 8.4, "Festive"],
@@ -132,13 +132,13 @@ const base: Array<[string, string, string, number, number, string, number, strin
   ["Laxmi Devotional Idol", "idols", "Silver Idols", 18900, 22500, idols, 96.0, "Gifting"],
   ["Anaya Rope Anklet", "anklets", "Anklets", 3990, 4800, bracelets, 12.6, "Festive"],
   // Kada
-  ["Veer Classic Silver Kada", "kada", "Kada", 8990, 10800, pKada1, 42.5, "Everyday", "Bestseller"],
+  ["Veer Classic Silver Kada", "kada", "Kada", 8990, 10800, pKada1, 42.5, "Everyday", "Most Loved"],
   ["Shivaya Temple Kada", "kada", "Kada", 11900, 14200, pKada2, 56.2, "Temple", "Trending"],
   ["Rudraksh Rope Kada", "kada", "Kada", 7490, 8900, pKada3, 34.8, "Everyday"],
   ["Bhairav Hammered Kada", "kada", "Kada", 9890, 11800, pKada4, 46.4, "Festive", "New"],
   ["Simha Tiger Kada", "kada", "Kada", 13900, 16500, pKada5, 62.0, "Wedding"],
   // Payal
-  ["Ghungroo Bell Payal", "payal", "Payal", 5490, 6600, pPayal1, 24.6, "Festive", "Bestseller"],
+  ["Ghungroo Bell Payal", "payal", "Payal", 5490, 6600, pPayal1, 24.6, "Festive", "Most Loved"],
   ["Nitya Fine Chain Payal", "payal", "Payal", 3290, 3900, pPayal2, 11.8, "Everyday", "New"],
   ["Meenal Oxidised Payal", "payal", "Payal", 4290, 5100, pPayal3, 16.4, "Festive"],
   ["Vadhu Bridal Payal", "payal", "Payal", 8490, 10200, pPayal4, 32.5, "Wedding", "Trending"],
@@ -153,6 +153,7 @@ export const products: Product[] = base.map(
     categoryLabel,
     price,
     mrp,
+    makingCharges: Math.floor(Math.random() * 21) + 40,
     image,
     weight,
     metal: "925 Sterling Silver",
