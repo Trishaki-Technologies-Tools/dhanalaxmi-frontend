@@ -36,14 +36,14 @@ function AdminCategories() {
   const update = (patch: Partial<Category>) =>
     setEditing((e) => (e ? { ...e, draft: { ...e.draft, ...patch } } : e));
 
-  const submit = () => {
+  const submit = async () => {
     if (!editing) return;
     const { draft, originalSlug } = editing;
     if (!draft.name.trim()) {
       toast.error("Category name is required");
       return;
     }
-    saveCategory({ ...draft, slug: draft.slug || slugify(draft.name) }, originalSlug);
+    await saveCategory({ ...draft, slug: draft.slug || slugify(draft.name) }, originalSlug);
     toast.success(originalSlug ? "Category updated" : "Category added");
     setEditing(null);
   };

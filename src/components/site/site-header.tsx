@@ -15,7 +15,7 @@ import {
   LogOut,
   UserRound,
 } from "lucide-react";
-import { categories } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
@@ -61,6 +61,7 @@ function AnnouncementBar() {
 }
 
 export function SiteHeader() {
+  const { categories } = useCatalog();
   const [scrolled, setScrolled] = useState(false);
   const [mega, setMega] = useState(false);
   const [mobile, setMobile] = useState(false);
@@ -320,7 +321,7 @@ export function SiteHeader() {
                 </div>
                 <Link to="/collections" className="luxe-card luxe-card-hover overflow-hidden">
                   <img
-                    src={categories[9]!.image}
+                    src={categories[9]?.image || categories[0]?.image || ""}
                     alt="Wedding collection"
                     loading="lazy"
                     width={900}

@@ -19,15 +19,15 @@ function emptyProduct(categorySlug: string, categoryLabel: string): Product {
     categoryLabel,
     price: 0,
     mrp: 0,
-    makingCharges: 50,
+    makingCharges: 0,
     image: "",
-    weight: 10,
+    weight: 0,
     metal: "925 Sterling Silver",
-    occasion: "Everyday",
-    collection: "Signature",
-    rating: 4.7,
+    occasion: "",
+    collection: "",
+    rating: 5,
     reviews: 0,
-    stock: 10,
+    stock: 0,
     popularity: 50,
     description: "",
   };
@@ -114,8 +114,8 @@ function AdminProducts() {
           const category = categories.find(c => c.slug === draft.category) || categories[0];
           if (!category) continue;
           
-          const weight = Number(draft.weight) || 10;
-          const makingCharges = Number(draft.makingCharges) || 50;
+          const weight = Number(draft.weight) || 0;
+          const makingCharges = Number(draft.makingCharges) || 0;
           const price = Math.round((weight * silverRate + weight * makingCharges) * 1.03);
           
           const product: Product = {
@@ -126,7 +126,7 @@ function AdminProducts() {
             makingCharges,
             price,
             mrp: Math.round(price * 1.2),
-            stock: Number(draft.stock) || 10,
+            stock: Number(draft.stock) || 0,
             image: draft.image || category.image,
             description: draft.description || "",
           };
@@ -159,7 +159,7 @@ function AdminProducts() {
   const update = (patch: Partial<Product>) =>
     setEditing((e) => (e ? { ...e, draft: { ...e.draft, ...patch } } : e));
 
-  const submit = () => {
+  const submit = async () => {
     if (!editing) return;
     const draft = editing.draft;
     if (!draft.name.trim()) {
@@ -171,7 +171,7 @@ function AdminProducts() {
     let finalMrp = draft.mrp;
     
     if (!finalPrice || finalPrice === 0) {
-      finalPrice = Math.round((draft.weight * silverRate + draft.weight * (draft.makingCharges || 0)) * 1.03);
+      finalPrice = Math.round(((draft.weight || 0) * silverRate + (draft.weight || 0) * (draft.makingCharges || 0)) * 1.03);
       finalMrp = Math.round(finalPrice * 1.2);
     }
 
@@ -183,7 +183,7 @@ function AdminProducts() {
       price: finalPrice,
       mrp: finalMrp,
     };
-    saveProduct(next, editing.originalSlug);
+    await saveProduct(next, editing.originalSlug);
     toast.success(editing.originalSlug ? "Product updated" : "Product added");
     setEditing(null);
   };
@@ -236,7 +236,7 @@ function AdminProducts() {
           }
         >
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Name" value={editing.draft.name} onChange={(v) => update({ name: v })} />
+            <Field label="Name" placeholder="Product name" value={editing.draft.name} onChange={(v) => update({ name: v })} />
             <label className="block">
               <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                 Category
@@ -256,23 +256,25 @@ function AdminProducts() {
             <Field
               label="Weight (g)"
               type="number"
-              value={editing.draft.weight}
+              placeholder="e.g. 14.5"
+              value={editing.draft.weight ? editing.draft.weight : ""}
               onChange={(v) => {
-                const weight = Number(v);
+                const weight = v === "" ? 0 : Number(v);
                 const makingCharges = editing.draft.makingCharges || 0;
-                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.03);
+                const price = weight > 0 ? Math.round((weight * silverRate + weight * makingCharges) * 1.03) : 0;
                 const mrp = Math.round(price * 1.2);
                 update({ weight, price, mrp });
               }}
             />
             <Field
-              label="Making charges / gm (₹)"
+              label="Making charges / gm (₹ / gram)"
               type="number"
-              value={editing.draft.makingCharges || 0}
+              placeholder="e.g. 45"
+              value={editing.draft.makingCharges ? editing.draft.makingCharges : ""}
               onChange={(v) => {
-                const makingCharges = Number(v);
+                const makingCharges = v === "" ? 0 : Number(v);
                 const weight = editing.draft.weight || 0;
-                const price = Math.round((weight * silverRate + weight * makingCharges) * 1.03);
+                const price = weight > 0 ? Math.round((weight * silverRate + weight * makingCharges) * 1.03) : 0;
                 const mrp = Math.round(price * 1.2);
                 update({ makingCharges, price, mrp });
               }}
@@ -280,28 +282,33 @@ function AdminProducts() {
             <Field
               label="Price (₹)"
               type="number"
-              value={editing.draft.price || 0}
-              onChange={(v) => update({ price: Number(v) })}
+              placeholder="Auto-calculated or custom"
+              value={editing.draft.price ? editing.draft.price : ""}
+              onChange={(v) => update({ price: v === "" ? 0 : Number(v) })}
             />
             <Field
               label="MRP (₹)"
               type="number"
-              value={editing.draft.mrp || 0}
-              onChange={(v) => update({ mrp: Number(v) })}
+              placeholder="Auto-calculated or custom"
+              value={editing.draft.mrp ? editing.draft.mrp : ""}
+              onChange={(v) => update({ mrp: v === "" ? 0 : Number(v) })}
             />
             <Field
               label="Stock"
               type="number"
-              value={editing.draft.stock}
-              onChange={(v) => update({ stock: Number(v) })}
+              placeholder="e.g. 10"
+              value={editing.draft.stock ? editing.draft.stock : ""}
+              onChange={(v) => update({ stock: v === "" ? 0 : Number(v) })}
             />
             <Field
               label="Occasion"
+              placeholder="e.g. Everyday, Festive, Wedding"
               value={editing.draft.occasion}
               onChange={(v) => update({ occasion: v })}
             />
             <Field
               label="Badge (optional)"
+              placeholder="e.g. Most Loved, Trending, New"
               value={editing.draft.badge ?? ""}
               onChange={(v) => update({ badge: v || undefined })}
             />
@@ -332,6 +339,7 @@ function AdminProducts() {
             </div>
             <TextArea
               label="Description"
+              placeholder="Product description, silver purity, craftsmanship..."
               value={editing.draft.description}
               onChange={(v) => update({ description: v })}
               className="sm:col-span-2 lg:col-span-3"
@@ -343,21 +351,21 @@ function AdminProducts() {
             <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
               <div>
                 <p className="text-muted-foreground text-xs">Silver Rate</p>
-                <p className="font-semibold">{formatINR(silverRate)} / g</p>
+                <p className="font-semibold">{formatINR(silverRate)} / gm (per gram)</p>
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Total Silver Amount</p>
-                <p className="font-semibold">{formatINR(editing.draft.weight * silverRate)}</p>
+                <p className="font-semibold">{formatINR((editing.draft.weight || 0) * silverRate)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Total Making Amount</p>
-                <p className="font-semibold">{formatINR(editing.draft.weight * (editing.draft.makingCharges || 0))}</p>
+                <p className="font-semibold">{formatINR((editing.draft.weight || 0) * (editing.draft.makingCharges || 0))}</p>
               </div>
               <div>
                 <p className="text-maroon text-xs font-semibold">Grand Total (inc. 3% GST)</p>
                 <p className="text-lg font-bold text-maroon">
                   {formatINR(
-                    (editing.draft.weight * silverRate + editing.draft.weight * (editing.draft.makingCharges || 0)) * 1.03
+                    ((editing.draft.weight || 0) * silverRate + (editing.draft.weight || 0) * (editing.draft.makingCharges || 0)) * 1.03
                   )}
                 </p>
               </div>

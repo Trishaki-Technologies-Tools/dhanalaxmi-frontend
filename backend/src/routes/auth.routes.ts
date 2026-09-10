@@ -7,6 +7,7 @@ import {
   verifyOtp,
   getProfile,
   updateProfile,
+  getAllCustomers,
 } from "../controllers/auth.controller.js";
 import { authenticate } from "../middlewares/auth.js";
 
@@ -19,5 +20,6 @@ router.post("/send-otp", sendOtp);
 router.post("/verify-otp", verifyOtp);
 router.get("/profile", authenticate, getProfile);
 router.put("/profile", authenticate, updateProfile);
+router.get("/customers", getAllCustomers);
 
 export default router;

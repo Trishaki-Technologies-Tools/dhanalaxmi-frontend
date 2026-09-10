@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { categories } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
 
 export const Route = createFileRoute("/collections")({
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/collections")({
 });
 
 function CollectionsPage() {
+  const { categories } = useCatalog();
   return (
     <div className="mx-auto max-w-[88rem] px-6 py-24 lg:px-10">
       <SectionHeading

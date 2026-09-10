@@ -41,12 +41,13 @@ export function Field({
   placeholder?: string;
   className?: string;
 }) {
+  const displayValue = (type === "number" && (value === 0 || value === "0")) ? "" : (value ?? "");
   return (
     <label className={`block ${className}`}>
       <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
       <input
         type={type}
-        value={value}
+        value={displayValue}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-maroon focus:ring-1 focus:ring-maroon/30"

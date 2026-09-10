@@ -13,7 +13,7 @@ import {
 import editorialPortrait from "@/assets/editorial-portrait.jpg";
 import editorialHands from "@/assets/editorial-hands.jpg";
 import craftImage from "@/assets/craft.jpg";
-import { categories, products } from "@/lib/catalog";
+import { useCatalog } from "@/lib/catalog-store";
 import { ProductCard } from "@/components/site/product-card";
 import { Reveal, SectionHeading } from "@/components/site/reveal";
 import { HeroCarousel } from "@/components/site/hero-carousel";
@@ -40,6 +40,7 @@ export const Route = createFileRoute("/")({
 
 
 function EditorialCollections() {
+  const { categories } = useCatalog();
   const featured = categories.slice(0, 4);
   return (
     <section className="bg-pearl py-20 lg:py-28">
@@ -114,6 +115,7 @@ const whyCards = [
 ];
 
 function Index() {
+  const { products } = useCatalog();
   return (
     <div>
       <HeroCarousel />

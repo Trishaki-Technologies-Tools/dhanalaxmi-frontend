@@ -124,9 +124,12 @@ function AdminLayout() {
           </nav>
           <div className="mt-auto hidden px-4 pb-6 lg:flex lg:flex-col lg:gap-4">
             <div className="rounded-lg border border-white/20 bg-white/10 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
-                Live Silver Rate
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                  Live Silver Rate
+                </p>
+                <span className="text-[10px] font-medium text-white/70">/gm (per gram)</span>
+              </div>
               <div className="mt-2 flex items-center gap-2">
                 <div className="relative flex-1">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-white/50">₹</span>
@@ -134,9 +137,10 @@ function AdminLayout() {
                     type="number"
                     value={silverRate}
                     onChange={(e) => setSilverRate(e.target.value ? Number(e.target.value) : "")}
-                    placeholder="Rate / gram"
-                    className="w-full rounded-md border border-white/20 bg-white/5 py-1.5 pl-6 pr-2 text-sm font-semibold text-white placeholder:text-white/40 outline-none focus:border-white/40"
+                    placeholder="Rate / gm (per gram)"
+                    className="w-full rounded-md border border-white/20 bg-white/5 py-1.5 pl-6 pr-10 text-sm font-semibold text-white placeholder:text-white/40 outline-none focus:border-white/40"
                   />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-medium text-white/60">/gm</span>
                 </div>
                 <button
                   onClick={handleUpdateSilverRate}

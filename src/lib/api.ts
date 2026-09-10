@@ -107,6 +107,11 @@ export const api = {
       }),
   },
 
+  // Customers API
+  customers: {
+    getAll: () => request<{ customers: any[] }>("/auth/customers"),
+  },
+
   // Addresses API
   addresses: {
     getAll: () => request<{ addresses: any[] }>("/addresses"),

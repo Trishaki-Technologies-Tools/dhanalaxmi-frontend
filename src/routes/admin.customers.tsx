@@ -18,17 +18,25 @@ type Row = {
   orders: number;
   spend: number;
   last: number;
+  createdAt: number;
 };
 
 function AdminCustomers() {
+  const [customersList, setCustomersList] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.orders.getAllAdmin().then((res) => {
-      if (res.orders) {
+    setLoading(true);
+    Promise.all([
+      api.customers.getAll().catch(() => ({ customers: [] })),
+      api.orders.getAllAdmin().catch(() => ({ orders: [] })),
+    ]).then(([custRes, ordRes]) => {
+      if (custRes?.customers) setCustomersList(custRes.customers);
+      if (ordRes?.orders) {
         setAllOrders(
-          res.orders.map((o: any) => ({
+          ordRes.orders.map((o: any) => ({
             id: o.orderNumber || String(o.id),
             phone: o.customerPhone || "",
             createdAt: new Date(o.createdAt).getTime(),
@@ -45,7 +53,7 @@ function AdminCustomers() {
               pincode: o.pincode,
             },
             status: (o.status === "CANCELLED" ? "cancelled" : "active") as Order["status"],
-            lines: o.items.map((item: any) => ({
+            lines: (o.items || []).map((item: any) => ({
               slug: item.productSlug,
               name: item.productName,
               image: item.productImage,
@@ -55,41 +63,83 @@ function AdminCustomers() {
           }))
         );
       }
+      setLoading(false);
     });
   }, []);
 
   const rows = useMemo(() => {
     const map = new Map<string, Row>();
-    allOrders.forEach((o) => {
-      const existing = map.get(o.phone);
-      const row: Row = existing ?? {
-        phone: o.phone,
-        name: o.address?.name ?? "Guest",
-        email: o.address?.email ?? "—",
-        city: o.address?.city ?? "—",
-        orders: 0,
-        spend: 0,
-        last: 0,
-      };
-      row.orders += 1;
-      if ((o.status ?? "active") === "active") row.spend += o.total;
-      row.last = Math.max(row.last, o.createdAt);
-      if (o.address?.name) row.name = o.address.name;
-      if (o.address?.email) row.email = o.address.email;
-      if (o.address?.city) row.city = o.address.city;
-      map.set(o.phone, row);
+
+    // 1. Add all registered customers from the User database table
+    customersList.forEach((u) => {
+      const phone = u.phone || "";
+      if (!phone) return;
+      
+      const defaultAddr = u.addresses?.find((a: any) => a.isDefault) || u.addresses?.[0];
+      const orderCount = u.orders?.length || 0;
+      const totalSpend = (u.orders || []).reduce(
+        (sum: number, o: any) => (o.status !== "CANCELLED" ? sum + Number(o.totalAmount || 0) : sum),
+        0
+      );
+      const lastOrderTime = (u.orders || []).reduce((max: number, o: any) => {
+        const t = new Date(o.createdAt).getTime();
+        return t > max ? t : max;
+      }, 0);
+
+      map.set(phone, {
+        phone,
+        name: u.name || "Customer",
+        email: u.email || "—",
+        city: defaultAddr?.city || "—",
+        orders: orderCount,
+        spend: totalSpend,
+        last: lastOrderTime || new Date(u.createdAt).getTime(),
+        createdAt: new Date(u.createdAt).getTime(),
+      });
     });
-    const list = [...map.values()].sort((a, b) => b.spend - a.spend);
+
+    // 2. Augment / merge with orders (catches any guest orders not linked to a registered account)
+    allOrders.forEach((o) => {
+      if (!o.phone) return;
+      const existing = map.get(o.phone);
+      if (existing) {
+        // If order details have newer info
+        if (existing.orders === 0) {
+          existing.orders = 1;
+          if (o.status === "active") existing.spend = o.total;
+          existing.last = o.createdAt;
+        }
+        if (o.address?.city && existing.city === "—") existing.city = o.address.city;
+        if (o.address?.email && existing.email === "—") existing.email = o.address.email;
+        if (o.address?.name && (!existing.name || existing.name.startsWith("Customer "))) {
+          existing.name = o.address.name;
+        }
+      } else {
+        map.set(o.phone, {
+          phone: o.phone,
+          name: o.address?.name ?? "Customer",
+          email: o.address?.email ?? "—",
+          city: o.address?.city ?? "—",
+          orders: 1,
+          spend: o.status === "active" ? o.total : 0,
+          last: o.createdAt,
+          createdAt: o.createdAt,
+        });
+      }
+    });
+
+    const list = [...map.values()].sort((a, b) => b.spend - a.spend || b.last - a.last);
     const q = query.trim().toLowerCase();
     return q
       ? list.filter(
           (r) =>
             r.phone.includes(q) ||
             r.name.toLowerCase().includes(q) ||
-            r.email.toLowerCase().includes(q),
+            r.email.toLowerCase().includes(q) ||
+            r.city.toLowerCase().includes(q),
         )
       : list;
-  }, [allOrders, query]);
+  }, [customersList, allOrders, query]);
 
   const totalSpend = rows.reduce((s, r) => s + r.spend, 0);
 
@@ -99,17 +149,17 @@ function AdminCustomers() {
         <p className="text-[10px] uppercase tracking-[0.24em] text-maroon">Relationships</p>
         <h1 className="mt-2 font-display text-3xl sm:text-4xl">Customers</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Built from every order placed on the store.
+          All registered accounts & patrons across the store.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatPill label="Customers" value={String(rows.length)} />
-        <StatPill label="Lifetime value" value={formatINR(totalSpend)} />
+        <StatPill label="Total Customers" value={String(rows.length)} />
+        <StatPill label="Lifetime Value" value={formatINR(totalSpend)} />
         <StatPill
-          label="Avg. order"
+          label="Avg. Spend per Customer"
           value={formatINR(
-            allOrders.length ? Math.round(totalSpend / Math.max(1, allOrders.length)) : 0,
+            rows.length ? Math.round(totalSpend / Math.max(1, rows.length)) : 0,
           )}
         />
       </div>
@@ -145,7 +195,13 @@ function AdminCustomers() {
                   <td className="py-3">{r.orders}</td>
                   <td className="py-3">{formatINR(r.spend)}</td>
                   <td className="py-3 text-muted-foreground">
-                    {new Date(r.last).toLocaleDateString("en-IN")}
+                    {r.orders > 0 ? (
+                      new Date(r.last).toLocaleDateString("en-IN")
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-mist px-2 py-0.5 text-[11px] text-muted-foreground">
+                        Joined {new Date(r.createdAt).toLocaleDateString("en-IN")}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

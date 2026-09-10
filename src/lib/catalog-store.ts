@@ -171,7 +171,13 @@ export async function hydrateCatalog() {
       const parsed = JSON.parse(raw) as Partial<CatalogState>;
       state = {
         products: parsed.products?.length ? parsed.products : state.products,
-        categories: parsed.categories?.length ? parsed.categories : state.categories,
+        categories: parsed.categories?.length
+          ? parsed.categories.map((c: any) => {
+              const localMatch = defaultCategories.find((lc) => lc.slug === c.slug);
+              const validImage = c.image && c.image.trim() !== "" ? c.image : (localMatch?.image || "");
+              return { ...c, image: validImage };
+            })
+          : state.categories,
         banners: parsed.banners?.length ? parsed.banners : state.banners,
         promos: parsed.promos?.length ? parsed.promos : state.promos,
         settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
@@ -224,8 +230,13 @@ export async function hydrateCatalog() {
         if (catRes.categories && catRes.categories.length > 0) {
           const apiCategories = catRes.categories.map((c: any) => {
             const localMatch = defaultCategories.find((lc) => lc.slug === c.slug);
-            const resolvedImage = c.image && !c.image.startsWith("http") && localMatch ? localMatch.image : c.image;
-            return { ...c, image: resolvedImage || "" };
+            let resolvedImage = c.image;
+            if (!resolvedImage || (!resolvedImage.startsWith("http") && !resolvedImage.startsWith("/assets/"))) {
+              if (localMatch?.image) {
+                resolvedImage = localMatch.image;
+              }
+            }
+            return { ...c, image: resolvedImage || (localMatch?.image || "") };
           });
           state = { ...state, categories: apiCategories };
           persist();
@@ -275,6 +286,8 @@ export async function saveProduct(product: Product, originalSlug?: string) {
   try {
     if (product.id) {
       await api.products.update(product.id, product);
+    } else if (originalSlug) {
+      await api.products.update(originalSlug, product);
     } else {
       const res = await api.products.create(product);
       if (res.product && res.product.id) product.id = res.product.id;
@@ -292,12 +305,14 @@ export async function saveProduct(product: Product, originalSlug?: string) {
 
 export async function deleteProduct(slug: string) {
   const target = state.products.find((p) => p.slug === slug);
-  if (target && target.id) {
-    try {
+  try {
+    if (target && target.id) {
       await api.products.delete(target.id);
-    } catch (err) {
-      console.error("Failed to delete product from DB", err);
+    } else {
+      await api.products.delete(slug);
     }
+  } catch (err) {
+    console.error("Failed to delete product from DB", err);
   }
   updateCatalog({ products: state.products.filter((p) => p.slug !== slug) });
 }
