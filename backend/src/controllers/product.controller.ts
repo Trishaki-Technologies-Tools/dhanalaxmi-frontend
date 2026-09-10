@@ -38,11 +38,11 @@ export const getProducts = async (req: Request, res: Response) => {
 
     const computedProducts = products.map((p) => {
       const subtotal = p.weight * silverRate + p.weight * Number(p.makingCharges);
-      const grandTotal = subtotal * 1.05;
+      const grandTotal = Math.round(subtotal * 1.03);
       return {
         ...p,
         price: grandTotal,
-        mrp: grandTotal * 1.2, // MRP could be arbitrarily higher, e.g. 20% more for display
+        mrp: Math.round(grandTotal * 1.2),
       };
     });
 
@@ -82,13 +82,13 @@ export const getProductBySlug = async (req: Request, res: Response) => {
     const silverRate = setting ? Number(setting.value) : 100;
 
     const subtotal = product.weight * silverRate + product.weight * Number(product.makingCharges);
-    const grandTotal = subtotal * 1.05;
+    const grandTotal = Math.round(subtotal * 1.03);
 
     return res.json({ 
       product: {
         ...product,
         price: grandTotal,
-        mrp: grandTotal * 1.2,
+        mrp: Math.round(grandTotal * 1.2),
       } 
     });
   } catch (error) {
@@ -121,7 +121,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
     const setting = await prisma.systemSetting.findUnique({ where: { key: "silverRate" } });
     const silverRate = setting ? Number(setting.value) : 100;
-    const computedPrice = (Number(weight || 0) * silverRate + Number(weight || 0) * Number(makingCharges || 0)) * 1.05;
+    const computedPrice = Math.round((Number(weight || 0) * silverRate + Number(weight || 0) * Number(makingCharges || 0)) * 1.03);
 
     const existing = await prisma.product.findUnique({ where: { slug: generatedSlug } });
 

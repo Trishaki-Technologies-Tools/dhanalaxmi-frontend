@@ -156,6 +156,23 @@ function AdminProducts() {
     setEditing({ draft: emptyProduct(first.slug, first.name) });
   };
 
+  const startEdit = (p: Product) => {
+    const weight = p.weight || 0;
+    const makingCharges = p.makingCharges || 0;
+    const computedPrice = weight > 0 && silverRate > 0
+      ? Math.round((weight * silverRate + weight * makingCharges) * 1.03)
+      : Math.round(p.price || 0);
+
+    setEditing({
+      draft: {
+        ...p,
+        price: computedPrice,
+        mrp: Math.round(p.mrp && p.mrp > computedPrice ? p.mrp : computedPrice * 1.2),
+      },
+      originalSlug: p.slug,
+    });
+  };
+
   const update = (patch: Partial<Product>) =>
     setEditing((e) => (e ? { ...e, draft: { ...e.draft, ...patch } } : e));
 
@@ -280,9 +297,9 @@ function AdminProducts() {
               }}
             />
             <Field
-              label="Price (₹)"
+              label="Price (₹) — Final Selling Price"
               type="number"
-              placeholder="Auto-calculated or custom"
+              placeholder="Auto-calculated (matches Grand Total)"
               value={editing.draft.price ? editing.draft.price : ""}
               onChange={(v) => update({ price: v === "" ? 0 : Number(v) })}
             />
@@ -441,7 +458,7 @@ function AdminProducts() {
                     <div className="flex justify-end gap-2">
                       <button
                         aria-label={`Edit ${p.name}`}
-                        onClick={() => setEditing({ draft: { ...p }, originalSlug: p.slug })}
+                        onClick={() => startEdit(p)}
                         className="rounded-full border border-border p-2 text-muted-foreground transition-colors hover:border-maroon hover:text-maroon"
                       >
                         <Pencil className="size-3.5" />
