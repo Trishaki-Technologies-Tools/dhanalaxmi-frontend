@@ -54,7 +54,7 @@ const inputClass =
 
 function CheckoutPage() {
   const { items, subtotal, savings, clear, coupon, applyCoupon, discount } = useCart();
-  const { phone: authPhone } = useAuth();
+  const { phone: authPhone, user } = useAuth();
   const { placeOrder } = useOrders();
   const { profile, addresses, defaultAddress, addAddress } = useProfile();
   const { settings } = useCatalog();
@@ -96,9 +96,9 @@ function CheckoutPage() {
 
   const selected = addresses.find((a) => a.id === selectedId);
   const defaults = {
-    name: selected?.name ?? profile.name ?? "",
-    email: profile.email ?? "",
-    phone: selected?.phone ?? initialPhone,
+    name: selected?.name ?? profile.name ?? user?.name ?? "",
+    email: profile.email ?? user?.email ?? "",
+    phone: selected?.phone ?? initialPhone ?? user?.phone ?? "",
     address: selected?.address ?? "",
     city: selected?.city ?? "",
     pincode: selected?.pincode ?? "",

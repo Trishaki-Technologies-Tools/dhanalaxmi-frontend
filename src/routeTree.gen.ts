@@ -19,9 +19,11 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrackRouteImport } from './routes/track'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -89,6 +91,11 @@ const OrdersRoute = OrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -102,6 +109,11 @@ const ShopRoute = ShopRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrackRoute = TrackRouteImport.update({
@@ -196,9 +208,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/track': typeof TrackRoute
   '/wishlist': typeof WishlistRoute
   '/admin/banners': typeof AdminBannersRoute
@@ -226,9 +240,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/track': typeof TrackRoute
   '/wishlist': typeof WishlistRoute
   '/admin/banners': typeof AdminBannersRoute
@@ -258,9 +274,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/track': typeof TrackRoute
   '/wishlist': typeof WishlistRoute
   '/admin/banners': typeof AdminBannersRoute
@@ -291,9 +309,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/order-confirmed'
     | '/orders'
+    | '/privacy'
     | '/search'
     | '/shop'
     | '/signup'
+    | '/terms'
     | '/track'
     | '/wishlist'
     | '/admin/banners'
@@ -321,9 +341,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/order-confirmed'
     | '/orders'
+    | '/privacy'
     | '/search'
     | '/shop'
     | '/signup'
+    | '/terms'
     | '/track'
     | '/wishlist'
     | '/admin/banners'
@@ -352,9 +374,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/order-confirmed'
     | '/orders'
+    | '/privacy'
     | '/search'
     | '/shop'
     | '/signup'
+    | '/terms'
     | '/track'
     | '/wishlist'
     | '/admin/banners'
@@ -384,9 +408,11 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
   OrdersRoute: typeof OrdersRoute
+  PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
   TrackRoute: typeof TrackRoute
   WishlistRoute: typeof WishlistRoute
   OrderIdRoute: typeof OrderIdRoute
@@ -465,6 +491,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -484,6 +517,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/track': {
@@ -644,9 +684,11 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
   OrdersRoute: OrdersRoute,
+  PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
   TrackRoute: TrackRoute,
   WishlistRoute: WishlistRoute,
   OrderIdRoute: OrderIdRoute,

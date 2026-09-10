@@ -19,7 +19,7 @@ import { categories } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/image.png";
 
 const announcements = [
   "Complimentary insured shipping across India",

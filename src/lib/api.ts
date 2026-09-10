@@ -66,8 +66,18 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       }),
-    loginOtp: (data: { phone: string }) =>
+    loginOtp: (data: { phone: string; name?: string }) =>
       request<{ message: string; user: any; token: string }>("/auth/login-otp", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    sendOtp: (data: { phone: string }) =>
+      request<{ message: string; devOtp?: string; warning?: string }>("/auth/send-otp", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    verifyOtp: (data: { phone: string; otp: string; name?: string }) =>
+      request<{ message: string; user: any; token: string }>("/auth/verify-otp", {
         method: "POST",
         body: JSON.stringify(data),
       }),

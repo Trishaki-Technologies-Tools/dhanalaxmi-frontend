@@ -109,10 +109,15 @@ function ContactPage() {
           </Reveal>
           <Reveal delay={0.36} className="overflow-hidden rounded-[1.25rem] border border-border">
             <iframe
-              title="Boutique location map"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=76.94%2C10.98%2C77.02%2C11.03&layer=mapnik"
-              className="h-72 w-full"
+              title="Shree Dhanlaxmi Jewellers location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3838.655227820347!2d74.50052971085691!3d15.822123245942123!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbf672b4044fdf5%3A0x2349dc2fddca62dd!2sShree%20Dhanlaxmi%20Jewellers!5e0!3m2!1sen!2sin!4v1789024804029!5m2!1sen!2sin"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              allowFullScreen
               loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              className="h-80 w-full"
             />
           </Reveal>
         </div>

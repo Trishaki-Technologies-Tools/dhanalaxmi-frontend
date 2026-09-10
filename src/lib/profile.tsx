@@ -43,37 +43,49 @@ type ProfileContextValue = {
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
-const emptyStore = (phone: string | null): Store => ({
-  profile: { name: "", email: "", phone: phone ?? "", birthday: "" },
+const emptyStore = (phone: string | null, name?: string | null): Store => ({
+  profile: { name: name ?? "", email: "", phone: phone ?? "", birthday: "" },
   addresses: [],
 });
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const { phone, isAuthenticated } = useAuth();
-  const [store, setStore] = useState<Store>(() => emptyStore(phone));
+  const { phone, user, isAuthenticated } = useAuth();
+  const [store, setStore] = useState<Store>(() => emptyStore(phone, user?.name));
+
+  // Keep store in sync if user changes
+  useEffect(() => {
+    if (user?.name && !store.profile.name) {
+      setStore((s) => ({
+        ...s,
+        profile: { ...s.profile, name: user.name ?? s.profile.name, phone: user.phone || s.profile.phone },
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setStore(emptyStore(phone));
+      setStore(emptyStore(phone, user?.name));
       return;
     }
 
     async function loadData() {
       try {
         const [profileRes, addressRes] = await Promise.all([
-          api.auth.getProfile(),
-          api.addresses.getAll(),
+          api.auth.getProfile().catch(() => ({ user: null })),
+          api.addresses.getAll().catch(() => ({ addresses: [] })),
         ]);
 
-        const user = profileRes.user;
-        const addresses = addressRes.addresses;
+        const fetchedUser = profileRes?.user;
+        const addresses = addressRes?.addresses || [];
 
-        setStore({
+        setStore((prev) => ({
           profile: {
-            name: user.name || "",
-            email: user.email || "",
-            phone: user.phone || phone || "",
-            birthday: user.birthday ? (new Date(user.birthday).toISOString().split("T")[0] ?? "") : "",
+            name: fetchedUser?.name || user?.name || prev.profile.name || "",
+            email: fetchedUser?.email || user?.email || prev.profile.email || "",
+            phone: fetchedUser?.phone || user?.phone || phone || prev.profile.phone || "",
+            birthday: fetchedUser?.birthday
+              ? new Date(fetchedUser.birthday).toISOString().split("T")[0] ?? ""
+              : prev.profile.birthday,
           },
           addresses: addresses.map((a: any) => ({
             id: String(a.id),
@@ -85,14 +97,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
             pincode: a.pincode,
             isDefault: a.isDefault,
           })),
-        });
+        }));
       } catch (err) {
         console.error("Failed to load profile data", err);
       }
     }
 
     loadData();
-  }, [isAuthenticated, phone]);
+  }, [isAuthenticated, phone, user]);
 
   const saveProfile = useCallback(
     async (patch: Partial<Profile>) => {
