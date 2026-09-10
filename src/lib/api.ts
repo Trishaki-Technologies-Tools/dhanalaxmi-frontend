@@ -231,5 +231,13 @@ export const api = {
         body: formData,
       });
     },
+    multiple: (files: File[]) => {
+      const formData = new FormData();
+      files.forEach((f) => formData.append("images", f));
+      return request<{ message: string; images: Array<{ originalName: string; url: string }> }>("/upload/multiple", {
+        method: "POST",
+        body: formData,
+      });
+    },
   },
 };

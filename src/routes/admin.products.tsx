@@ -1,6 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { Pencil, Plus, Trash2, X, Loader2, Upload, Download, UploadCloud } from "lucide-react";
+import {
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+  Loader2,
+  Upload,
+  Download,
+  UploadCloud,
+  FileSpreadsheet,
+  ImagePlus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatINR, type Product } from "@/lib/catalog";
 import { deleteProduct, saveProduct, slugify, useCatalog } from "@/lib/catalog-store";
@@ -33,13 +44,65 @@ function emptyProduct(categorySlug: string, categoryLabel: string): Product {
   };
 }
 
+/** Robust RFC 4180 CSV parser supporting commas inside quotes and multiline cells */
+function parseCSV(text: string): string[][] {
+  const lines: string[][] = [];
+  let row: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      row.push(current.trim());
+      current = "";
+    } else if ((char === "\r" || char === "\n") && !inQuotes) {
+      if (char === "\r" && nextChar === "\n") i++;
+      row.push(current.trim());
+      if (row.length > 1 || (row.length === 1 && row[0] !== "")) {
+        lines.push(row);
+      }
+      row = [];
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  if (current.length > 0 || row.length > 0) {
+    row.push(current.trim());
+    lines.push(row);
+  }
+
+  return lines;
+}
+
 function AdminProducts() {
   const { products, categories } = useCatalog();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [editing, setEditing] = useState<{ draft: Product; originalSlug?: string } | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [silverRate, setSilverRate] = useState<number>(0);
+
+  const [uploadedImagesMap, setUploadedImagesMap] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem("dhanalaxmi_image_map");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
   useEffect(() => {
     api.settings.getSilverRate().then(res => {
@@ -60,24 +123,131 @@ function AdminProducts() {
       toast.error("Failed to upload image");
     } finally {
       setIsUploadingImage(false);
-      // Reset input value so same file can be uploaded again if needed
       e.target.value = "";
     }
   };
 
+  const handleBulkImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setIsBulkUploading(true);
+    const toastId = toast.loading(`Uploading ${files.length} photos to Cloudflare R2...`);
+
+    try {
+      const res = await api.upload.multiple(files);
+      if (res.images && res.images.length > 0) {
+        const newMap = { ...uploadedImagesMap };
+        res.images.forEach((img) => {
+          const lowerOriginal = img.originalName.toLowerCase();
+          newMap[lowerOriginal] = img.url;
+          // Also match without path or whitespace
+          const baseName = lowerOriginal.split(/[\\/]/).pop() || lowerOriginal;
+          newMap[baseName] = img.url;
+        });
+        setUploadedImagesMap(newMap);
+        try {
+          localStorage.setItem("dhanalaxmi_image_map", JSON.stringify(newMap));
+        } catch {}
+        toast.success(
+          `Uploaded ${res.images.length} photos! Now you can import your CSV using these filenames.`,
+          { id: toastId }
+        );
+      } else {
+        toast.error("No images were processed.", { id: toastId });
+      }
+    } catch (err) {
+      toast.error("Failed to upload photos. Please check your network.", { id: toastId });
+    } finally {
+      setIsBulkUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDownloadSampleCSV = () => {
+    const headers = [
+      "name",
+      "category",
+      "weight",
+      "makingCharges",
+      "stock",
+      "image",
+      "description",
+      "occasion",
+      "badge",
+    ];
+
+    const sampleRows = [
+      headers.join(","),
+      [
+        '"Aarohi Diamond Cut Silver Ring"',
+        '"rings"',
+        "6.5",
+        "50",
+        "12",
+        '"ring-01.jpg"',
+        '"Handcrafted in pure 925 hallmarked sterling silver with diamond-cut facets for dazzling brilliance."',
+        '"Wedding"',
+        '"Trending"',
+      ].join(","),
+      [
+        '"Veer Classic Silver Kada"',
+        '"kada"',
+        "38.0",
+        "45",
+        "8",
+        '"kada-01.jpg"',
+        '"Solid 925 sterling silver kada featuring traditional hand-carved motifs and premium mirror polish."',
+        '"Everyday"',
+        '"Most Loved"',
+      ].join(","),
+      [
+        '"Ghungroo Melodic Silver Payal"',
+        '"payal"',
+        "22.4",
+        "55",
+        "15",
+        '"payal-01.jpg"',
+        '"Traditional hallmarked sterling silver anklet with melodious bells, finished for festive grace."',
+        '"Festive"',
+        '"New"',
+      ].join(","),
+      [
+        '"Kanaka Diamond Link Chain"',
+        '"chains"',
+        "18.5",
+        "40",
+        "10",
+        '"chain-01.jpg"',
+        '"Pure 925 sterling silver chain with interlocked link structure and reinforced clasp for everyday wear."',
+        '"Everyday"',
+        '""',
+      ].join(","),
+    ];
+
+    const blob = new Blob([sampleRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dhanalaxmi_products_sample_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Sample CSV template downloaded");
+  };
+
   const handleExportCSV = () => {
     if (products.length === 0) return toast.error("No products to export");
-    const headers = ["slug", "name", "category", "weight", "makingCharges", "stock", "image", "description"];
+    const headers = ["slug", "name", "category", "weight", "makingCharges", "stock", "image", "description", "occasion", "badge"];
     const csvRows = [headers.join(",")];
     for (const p of products) {
       const row = headers.map(h => {
-        let val = (p as any)[h] || "";
+        let val = (p as any)[h] ?? "";
         if (typeof val === "string") val = `"${val.replace(/"/g, '""')}"`;
         return val;
       });
       csvRows.push(row.join(","));
     }
-    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -93,31 +263,58 @@ function AdminProducts() {
     reader.onload = async (event) => {
       try {
         const text = event.target?.result as string;
-        const lines = text.split("\n").filter(l => l.trim());
-        if (lines.length <= 1) return toast.error("Empty CSV");
-        
-        const headers = lines[0].split(",").map(h => h.trim().replace(/"/g, ""));
+        const rows = parseCSV(text);
+        if (rows.length <= 1) return toast.error("Empty CSV file");
+
+        const headers = rows[0].map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase());
         let imported = 0;
-        
-        for (let i = 1; i < lines.length; i++) {
-          // Simple regex to split by comma ignoring commas inside quotes
-          const rowMatches = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(",");
-          const row = rowMatches.map(c => c.trim().replace(/^"|"$/g, ""));
-          
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
+
           const draft: any = {};
           headers.forEach((h, idx) => {
-            draft[h] = row[idx] || "";
+            draft[h] = row[idx] ? row[idx].replace(/^"|"$/g, "").trim() : "";
           });
-          
-          if (!draft.name || !draft.category) continue;
-          
-          const category = categories.find(c => c.slug === draft.category) || categories[0];
+
+          if (!draft.name) continue;
+
+          const rawCategory = (draft.category || "rings").toLowerCase();
+          const category =
+            categories.find(
+              (c) => c.slug.toLowerCase() === rawCategory || c.name.toLowerCase() === rawCategory,
+            ) || categories[0];
           if (!category) continue;
-          
+
           const weight = Number(draft.weight) || 0;
-          const makingCharges = Number(draft.makingCharges) || 0;
+          const makingCharges = Number(draft.makingcharges || draft.making_charges) || 0;
           const price = Math.round((weight * silverRate + weight * makingCharges) * 1.03);
-          
+
+          // Smart image resolution from uploadedImagesMap or full URL
+          let resolvedImage = draft.image?.trim() || "";
+          if (resolvedImage) {
+            const cleanName = resolvedImage.toLowerCase().replace(/^["']|["']$/g, "").trim();
+            const filenameOnly = cleanName.split(/[\\/]/).pop() || cleanName;
+
+            if (uploadedImagesMap[cleanName]) {
+              resolvedImage = uploadedImagesMap[cleanName];
+            } else if (uploadedImagesMap[filenameOnly]) {
+              resolvedImage = uploadedImagesMap[filenameOnly];
+            } else if (resolvedImage.startsWith("http://") || resolvedImage.startsWith("https://")) {
+              // Valid URL - keep as is
+            } else if (resolvedImage.startsWith("/assets/")) {
+              // Local asset path
+            } else {
+              // Cloudflare R2 default URL fallback
+              resolvedImage = `https://pub-942d3ce481d44239b1d6082803b50b4c.r2.dev/${filenameOnly}`;
+            }
+          }
+
+          if (!resolvedImage) {
+            resolvedImage = category.image || "";
+          }
+
           const product: Product = {
             ...emptyProduct(category.slug, category.name),
             slug: draft.slug || slugify(draft.name),
@@ -127,15 +324,18 @@ function AdminProducts() {
             price,
             mrp: Math.round(price * 1.2),
             stock: Number(draft.stock) || 0,
-            image: draft.image || category.image,
+            image: resolvedImage,
             description: draft.description || "",
+            occasion: draft.occasion || "Everyday",
+            badge: draft.badge || undefined,
           };
           await saveProduct(product, product.slug);
           imported++;
         }
         toast.success(`Imported ${imported} products successfully`);
       } catch (err) {
-        toast.error("Failed to parse CSV");
+        console.error("CSV parse error:", err);
+        toast.error("Failed to parse CSV file");
       }
       e.target.value = "";
     };
@@ -227,15 +427,36 @@ function AdminProducts() {
             </AdminButton>
           ) : (
             <>
-              <AdminButton variant="outline" onClick={handleExportCSV}>
-                <Download className="size-4 mr-1.5" /> Export
+              <AdminButton variant="outline" onClick={handleDownloadSampleCSV}>
+                <FileSpreadsheet className="size-4 mr-1.5 text-emerald-600" /> Sample CSV
               </AdminButton>
               <label className="cursor-pointer">
                 <div className="flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-4 text-sm font-medium transition-colors hover:bg-muted/50 text-foreground">
-                  <UploadCloud className="size-4 mr-1.5" /> Import
+                  {isBulkUploading ? (
+                    <Loader2 className="size-4 mr-1.5 animate-spin text-maroon" />
+                  ) : (
+                    <ImagePlus className="size-4 mr-1.5 text-blue-600" />
+                  )}
+                  {isBulkUploading ? "Uploading..." : "Upload Photos"}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="sr-only"
+                  onChange={handleBulkImageUpload}
+                  disabled={isBulkUploading}
+                />
+              </label>
+              <label className="cursor-pointer">
+                <div className="flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-4 text-sm font-medium transition-colors hover:bg-muted/50 text-foreground">
+                  <UploadCloud className="size-4 mr-1.5 text-amber-600" /> Import CSV
                 </div>
                 <input type="file" accept=".csv" className="sr-only" onChange={handleImportCSV} />
               </label>
+              <AdminButton variant="outline" onClick={handleExportCSV}>
+                <Download className="size-4 mr-1.5" /> Export
+              </AdminButton>
               <AdminButton onClick={startNew}>
                 <Plus className="size-4 mr-1.5" /> Add product
               </AdminButton>
