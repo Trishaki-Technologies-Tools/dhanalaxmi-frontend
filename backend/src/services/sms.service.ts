@@ -19,14 +19,14 @@ export async function sendMsg91Otp(
     };
   }
 
-  const authkey = process.env.MSG91_AUTH_KEY;
-  const templateId = process.env.MSG91_TEMPLATE_ID;
+  const authkey = process.env.MSG91_AUTH_KEY || "505779Adxsd9jGlEjy6aa25b64P1";
+  const templateId = process.env.MSG91_TEMPLATE_ID || "6aa2519133e81598ed072984";
 
   if (!authkey || !templateId) {
     console.warn(
       "[MSG91] MSG91_AUTH_KEY or MSG91_TEMPLATE_ID is missing in environment variables."
     );
-    return { success: false, error: "SMS service is not configured in backend env." };
+    return { success: false, error: "SMS service credentials not configured." };
   }
 
   const mobileWithCode = "91" + validation.cleanPhone;

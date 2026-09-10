@@ -43,10 +43,28 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers,
   });
 
-  const data = await response.json();
+  let data: any = null;
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+  } else {
+    try {
+      const rawText = await response.text();
+      const match = rawText.match(/<pre>(.*?)<\/pre>/s) || rawText.match(/Cannot (POST|GET|PUT|DELETE) [^\s<]+/);
+      data = {
+        message: match ? match[1]?.trim() || match[0] : (response.status === 404 ? `Endpoint ${endpoint} not found (404)` : `Server returned error (${response.status})`),
+      };
+    } catch {
+      data = { message: `Server error (${response.status})` };
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || "An error occurred while communicating with the server.");
+    throw new Error(data?.message || `Server responded with status ${response.status}`);
   }
 
   return data as T;

@@ -116,30 +116,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPendingPhone(normalized);
     setPendingOtp(code);
 
-    // 1. Try sending live SMS via Vite dev server MSG91 handler
-    try {
-      const devRes = await fetch("/api/send-live-sms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: normalized, otp: code }),
-      });
-      const data = await devRes.json();
-      if (data.success) {
-        return { success: true, message: "Live OTP sent via SMS." };
+    // 1. In local Vite development only, try dev SMS handler
+    if (import.meta.env.DEV) {
+      try {
+        const devRes = await fetch("/api/send-live-sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: normalized, otp: code }),
+        });
+        if (devRes.ok) {
+          const data = await devRes.json();
+          if (data?.success) {
+            return { success: true, message: "Live OTP sent via SMS." };
+          }
+        }
+      } catch {
+        /* continue to backend */
       }
-    } catch {
-      /* continue to backend */
     }
 
-    // 2. Try sending via backend API
+    // 2. Production & Primary: Send via backend API
     try {
       const res = await api.auth.sendOtp({ phone: normalized });
       return { success: true, message: res.message || "Live OTP sent via SMS." };
     } catch (err: any) {
-      console.warn("[Auth] Backend sendOtp note:", err);
+      console.error("[Auth] Backend sendOtp error:", err);
+      throw err;
     }
-
-    return { success: true, message: "OTP sent via SMS to your mobile number." };
   }, []);
 
   const verifyOtp = useCallback(
