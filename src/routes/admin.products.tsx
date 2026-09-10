@@ -184,13 +184,18 @@ function AdminProducts() {
       return;
     }
     const category = categories.find((c) => c.slug === draft.category);
-    let finalPrice = draft.price;
-    let finalMrp = draft.mrp;
     
-    if (!finalPrice || finalPrice === 0) {
-      finalPrice = Math.round(((draft.weight || 0) * silverRate + (draft.weight || 0) * (draft.makingCharges || 0)) * 1.03);
-      finalMrp = Math.round(finalPrice * 1.2);
+    const calculatedTotal = (draft.weight && silverRate)
+      ? Math.round((draft.weight * silverRate + draft.weight * (draft.makingCharges || 0)) * 1.03)
+      : 0;
+
+    const oldFormulaPrice = Math.round(((draft.weight || 0) * silverRate + (draft.weight || 0) * (draft.makingCharges || 0)) * 1.05);
+
+    let finalPrice = draft.price ? Math.round(draft.price) : calculatedTotal;
+    if (calculatedTotal > 0 && (finalPrice === 0 || finalPrice === oldFormulaPrice)) {
+      finalPrice = calculatedTotal;
     }
+    const finalMrp = draft.mrp && draft.mrp > finalPrice ? Math.round(draft.mrp) : Math.round(finalPrice * 1.2);
 
     const next: Product = {
       ...draft,
@@ -448,7 +453,13 @@ function AdminProducts() {
                   <td className="py-3 text-muted-foreground">{p.categoryLabel}</td>
                   <td className="py-3">{formatINR(p.makingCharges || 0)}</td>
                   <td className="py-3 text-muted-foreground">{p.weight}g</td>
-                  <td className="py-3 font-semibold text-maroon">{formatINR(p.price || 0)}</td>
+                  <td className="py-3 font-semibold text-maroon">
+                    {formatINR(
+                      silverRate > 0 && p.weight > 0
+                        ? Math.round((p.weight * silverRate + p.weight * (p.makingCharges || 0)) * 1.03)
+                        : Math.round(p.price || 0)
+                    )}
+                  </td>
                   <td className="py-3">
                     <span className={p.stock <= 5 ? "text-destructive" : "text-muted-foreground"}>
                       {p.stock}
