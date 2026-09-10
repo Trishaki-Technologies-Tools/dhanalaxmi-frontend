@@ -36,7 +36,14 @@ function SignupPage() {
   const { pendingOtp, pendingPhone, requestOtp, verifyOtp, cancelOtp } = useAuth();
 
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get("phone");
+      return p ? p.replace(/\D/g, "").slice(-10) : "";
+    } catch {
+      return "";
+    }
+  });
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"info" | "otp">("info");
   const [loading, setLoading] = useState(false);
@@ -101,13 +108,25 @@ function SignupPage() {
 
     setLoading(true);
     try {
-      await requestOtp(normalized);
+      await requestOtp(normalized, "signup");
       setCode("");
       setCountdown(60);
       setStep("otp");
       toast.success("OTP sent via SMS to +91 " + normalized);
     } catch (err: any) {
-      toast.error(err.message || "Failed to send OTP. Please try again.");
+      const msg = err?.message || "";
+      if (
+        msg.includes("already exists") ||
+        msg.includes("Please sign in") ||
+        err?.status === 409
+      ) {
+        toast.info("An account already exists with this mobile number. Redirecting to Sign In...");
+        setTimeout(() => {
+          window.location.href = `/login?phone=${encodeURIComponent(normalized)}`;
+        }, 1200);
+      } else {
+        toast.error(msg || "Failed to send OTP. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -122,15 +141,15 @@ function SignupPage() {
 
     setLoading(true);
     try {
-      // Pass the customer name so it's registered on the account and persisted in session
-      const success = await verifyOtp(code, name.trim());
+      // Pass customer name and signup intent
+      const success = await verifyOtp(code, name.trim(), "signup");
       if (!success) {
         toast.error("Incorrect OTP. Please check the code received on SMS.");
         return;
       }
 
       toast.success(`Welcome to Dhanalaxmi Jeweller's, ${name.trim()}!`);
-      // DIRECT LOGIN: navigate straight to shop/orders without hitting signin page
+      // DIRECT LOGIN: navigate straight to boutique without hitting signin page
       navigate({ to: "/shop" });
     } catch (err: any) {
       toast.error(err.message || "Account creation failed. Please try again.");

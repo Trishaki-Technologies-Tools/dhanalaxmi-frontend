@@ -82,7 +82,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const loginOtp = async (req: Request, res: Response) => {
   try {
-    const { phone, name } = req.body;
+    const { phone } = req.body;
 
     if (!phone) {
       return res.status(400).json({ message: "Phone number is required." });
@@ -92,17 +92,9 @@ export const loginOtp = async (req: Request, res: Response) => {
     let user = await prisma.user.findFirst({ where: { phone: cleanPhone } });
 
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          name: name && name.trim() ? name.trim() : `Customer ${cleanPhone.slice(-4)}`,
-          phone: cleanPhone,
-          role: "CUSTOMER",
-        },
-      });
-    } else if (name && name.trim() && (user.name.startsWith("Customer ") || !user.name)) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { name: name.trim() },
+      return res.status(404).json({
+        message: "No account found with this mobile number. Please create an account first.",
+        redirectTo: "/signup",
       });
     }
 
@@ -123,7 +115,7 @@ export const loginOtp = async (req: Request, res: Response) => {
 
 export const sendOtp = async (req: Request, res: Response) => {
   try {
-    const { phone } = req.body;
+    const { phone, intent = "login" } = req.body;
 
     // 1. Strict Indian Mobile Validation (TRAI standards & anti-dummy check)
     const validation = validateIndianMobileNumber(phone);
@@ -132,6 +124,28 @@ export const sendOtp = async (req: Request, res: Response) => {
     }
 
     const cleanPhone = validation.cleanPhone;
+
+    // 2. Database Verification Before Hitting MSG91
+    const existingUser = await prisma.user.findFirst({ where: { phone: cleanPhone } });
+
+    if (intent === "login") {
+      if (!existingUser) {
+        return res.status(404).json({
+          message: "No account found with this mobile number. Please create an account first.",
+          userExists: false,
+          redirectTo: "/signup",
+        });
+      }
+    } else if (intent === "signup") {
+      if (existingUser) {
+        return res.status(409).json({
+          message: "An account with this mobile number already exists. Please sign in.",
+          userExists: true,
+          redirectTo: "/login",
+        });
+      }
+    }
+
     const rawForwarded = req.headers["x-forwarded-for"];
     const clientIp = typeof rawForwarded === "string"
       ? rawForwarded.split(",")[0]?.trim()
@@ -139,7 +153,7 @@ export const sendOtp = async (req: Request, res: Response) => {
       ? rawForwarded[0]?.trim()
       : req.socket.remoteAddress || req.ip;
 
-    // 2. Anti-Bot & Dual Rate Limiter (by Phone & IP)
+    // 3. Anti-Bot & Dual Rate Limiter (by Phone & IP)
     const rateCheck = checkOtpRateLimit(cleanPhone, clientIp);
     if (!rateCheck.allowed) {
       return res.status(429).json({ message: rateCheck.error, retryAfter: rateCheck.retryAfterSeconds });
@@ -157,7 +171,10 @@ export const sendOtp = async (req: Request, res: Response) => {
       return res.status(500).json({ message: "Failed to send SMS OTP. Please try again." });
     }
 
-    return res.json({ message: "OTP sent successfully to +91 " + cleanPhone });
+    return res.json({
+      message: "OTP sent successfully to +91 " + cleanPhone,
+      userExists: Boolean(existingUser),
+    });
   } catch (error: any) {
     console.error("[OTP] sendOtp error:", error);
     return res.status(500).json({ message: "Internal server error sending OTP." });
@@ -166,7 +183,7 @@ export const sendOtp = async (req: Request, res: Response) => {
 
 export const verifyOtp = async (req: Request, res: Response) => {
   try {
-    const { phone, otp, name } = req.body;
+    const { phone, otp, name, intent = "login" } = req.body;
     if (!phone || !otp) {
       return res.status(400).json({ message: "Phone and OTP are required." });
     }
@@ -193,19 +210,29 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
     let user = await prisma.user.findFirst({ where: { phone: cleanPhone } });
 
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          name: name && name.trim() ? name.trim() : `Customer ${cleanPhone.slice(-4)}`,
-          phone: cleanPhone,
-          role: "CUSTOMER",
-        },
-      });
-    } else if (name && name.trim() && (user.name.startsWith("Customer ") || !user.name)) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { name: name.trim() },
-      });
+    if (intent === "login") {
+      if (!user) {
+        return res.status(404).json({
+          message: "No account found with this mobile number. Please create an account first.",
+          redirectTo: "/signup",
+        });
+      }
+    } else {
+      // intent === "signup"
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            name: name && name.trim() ? name.trim() : `Customer ${cleanPhone.slice(-4)}`,
+            phone: cleanPhone,
+            role: "CUSTOMER",
+          },
+        });
+      } else if (name && name.trim()) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { name: name.trim() },
+        });
+      }
     }
 
     const token = jwt.sign(

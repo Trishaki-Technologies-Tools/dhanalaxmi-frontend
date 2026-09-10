@@ -88,12 +88,24 @@ function LoginPage() {
 
     setLoading(true);
     try {
-      await requestOtp(normalized);
+      await requestOtp(normalized, "login");
       setCode("");
       setCountdown(60); // start 60s cooldown
       toast.success("OTP sent via SMS to your mobile number.");
     } catch (err: any) {
-      toast.error(err.message || "Failed to send OTP.");
+      const msg = err?.message || "";
+      if (
+        msg.includes("No account found") ||
+        msg.includes("create an account") ||
+        msg.includes("404")
+      ) {
+        toast.error("No account found with this mobile number. Redirecting to Create Account...");
+        setTimeout(() => {
+          window.location.href = `/signup?phone=${encodeURIComponent(normalized)}`;
+        }, 1200);
+      } else {
+        toast.error(msg || "Failed to send OTP.");
+      }
     } finally {
       setLoading(false);
     }
@@ -107,13 +119,13 @@ function LoginPage() {
     }
     setLoading(true);
     try {
-      const success = await verifyOtp(code);
+      const success = await verifyOtp(code, undefined, "login");
       if (!success) {
         toast.error("Incorrect OTP. Please check the code received on SMS.");
         return;
       }
       toast.success("Signed in successfully.");
-      navigate({ to: "/orders" });
+      navigate({ to: "/shop" });
     } catch (err: any) {
       toast.error(err.message || "Verification failed. Please try again.");
     } finally {

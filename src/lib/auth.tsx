@@ -25,14 +25,15 @@ type AuthContextValue = {
   pendingOtp: string | null;
   pendingPhone: string | null;
   requestOtp: (
-    phone: string
+    phone: string,
+    intent?: "login" | "signup"
   ) => Promise<{
     success: boolean;
     message?: string | undefined;
     devOtp?: string | undefined;
     error?: string | undefined;
   }>;
-  verifyOtp: (code: string, name?: string) => Promise<boolean>;
+  verifyOtp: (code: string, name?: string, intent?: "login" | "signup") => Promise<boolean>;
   login: (identifier: string, password?: string) => Promise<boolean>;
   register: (name: string, phone: string, email?: string, password?: string) => Promise<boolean>;
   cancelOtp: () => void;
@@ -110,34 +111,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadProfile();
   }, []);
 
-  const requestOtp = useCallback(async (raw: string) => {
+  const requestOtp = useCallback(async (raw: string, intent: "login" | "signup" = "login") => {
     const normalized = normalizePhone(raw);
     const code = String(Math.floor(100000 + Math.random() * 900000));
     setPendingPhone(normalized);
     setPendingOtp(code);
 
-    // 1. In local Vite development only, try dev SMS handler
-    if (import.meta.env.DEV) {
-      try {
-        const devRes = await fetch("/api/send-live-sms", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: normalized, otp: code }),
-        });
-        if (devRes.ok) {
-          const data = await devRes.json();
-          if (data?.success) {
-            return { success: true, message: "Live OTP sent via SMS." };
-          }
-        }
-      } catch {
-        /* continue to backend */
-      }
-    }
-
-    // 2. Production & Primary: Send via backend API
+    // Call backend API (checks database before sending OTP)
     try {
-      const res = await api.auth.sendOtp({ phone: normalized });
+      const payload: { phone: string; intent?: "login" | "signup" } = {
+        phone: normalized,
+        intent,
+      };
+      const res = await api.auth.sendOtp(payload);
       return { success: true, message: res.message || "Live OTP sent via SMS." };
     } catch (err: any) {
       console.error("[Auth] Backend sendOtp error:", err);
@@ -146,16 +132,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const verifyOtp = useCallback(
-    async (code: string, name?: string) => {
+    async (code: string, name?: string, intent: "login" | "signup" = "login") => {
       if (!pendingPhone) return false;
       const cleanCode = code.replace(/\D/g, "");
       const targetPhone = pendingPhone;
 
-      // 1. Try verifying with backend verifyOtp endpoint
+      // 1. Verify with backend verifyOtp endpoint
       try {
-        const payload: { phone: string; otp: string; name?: string } = {
+        const payload: { phone: string; otp: string; name?: string; intent?: "login" | "signup" } = {
           phone: targetPhone,
           otp: cleanCode,
+          intent,
         };
         if (name?.trim()) payload.name = name.trim();
 
@@ -178,55 +165,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPendingOtp(null);
         setPendingPhone(null);
         return true;
-      } catch {
-        /* fallback to verifying matching code */
+      } catch (err) {
+        console.error("[Auth] verifyOtp error:", err);
+        throw err;
       }
-
-      // 2. Verify against the generated OTP sent via MSG91
-      if (pendingOtp && cleanCode === pendingOtp) {
-        let createdUser: UserProfile | null = null;
-        try {
-          const payload: { phone: string; name?: string } = { phone: targetPhone };
-          if (name?.trim()) payload.name = name.trim();
-
-          const res = await api.auth.loginOtp(payload);
-          if (res.token) {
-            setAuthToken(res.token);
-            createdUser = {
-              ...res.user,
-              name: res.user.name || name?.trim() || null,
-            };
-            setUser(createdUser);
-            setPhone(createdUser.phone);
-          }
-        } catch {
-          createdUser = {
-            id: "user-" + targetPhone,
-            name: name?.trim() || null,
-            email: null,
-            phone: targetPhone,
-            role: "CUSTOMER",
-          };
-          setUser(createdUser);
-          setPhone(targetPhone);
-        }
-
-        try {
-          window.localStorage.setItem(STORAGE_KEY, targetPhone);
-          if (createdUser) {
-            window.localStorage.setItem(PROFILE_KEY, JSON.stringify(createdUser));
-          }
-        } catch {
-          /* ignore */
-        }
-        setPendingOtp(null);
-        setPendingPhone(null);
-        return true;
-      }
-
-      return false;
     },
-    [pendingOtp, pendingPhone]
+    [pendingPhone]
   );
 
   const login = useCallback(async (identifier: string, password?: string) => {
