@@ -31,6 +31,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Scratch and local test packs
+scratch/
+test_upload_pack/
+
 # Environment variables (NEVER commit secrets to GitHub)
 .env
 .env.*
