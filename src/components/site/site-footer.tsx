@@ -28,7 +28,7 @@ export function SiteFooter() {
         <div className="grid gap-14 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div className="max-w-sm">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="Dhanalaxmi Logo" className="h-12 w-auto object-contain" />
+              <img src={logo} alt="Dhanalaxmi Logo" className="h-12 w-auto object-contain brightness-0 invert" />
               <div className="flex flex-col items-center leading-none pt-1">
                 <span className="font-['Cinzel',_serif] text-2xl font-bold tracking-[0.05em]">
                   DHANALAXMI

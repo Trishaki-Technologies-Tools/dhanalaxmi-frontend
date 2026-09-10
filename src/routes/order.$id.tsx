@@ -355,8 +355,16 @@ function OrderDetailPage() {
             <h2 className="font-display text-2xl">Pricing breakdown</h2>
             <dl className="mt-5 space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Subtotal</dt>
-                <dd className="font-price">{formatINR(subtotal)}</dd>
+                <dt className="text-muted-foreground">Price</dt>
+                <dd className="font-price">{formatINR(subtotal / 1.03)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">CGST (1.5%)</dt>
+                <dd className="font-price">{formatINR((subtotal / 1.03) * 0.015)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">SGST (1.5%)</dt>
+                <dd className="font-price">{formatINR((subtotal / 1.03) * 0.015)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Insured shipping</dt>

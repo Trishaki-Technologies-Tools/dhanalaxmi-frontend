@@ -108,7 +108,7 @@ export function SiteHeader() {
       <AnnouncementBar />
       <div
         className={cn(
-          "border-b border-primary-foreground/15 bg-primary text-primary-foreground transition-all duration-500",
+          "border-b border-maroon/15 bg-[#F6D7B0] text-maroon transition-all duration-500",
           scrolled ? "shadow-luxe" : "",
         )}
         onMouseLeave={() => setMega(false)}
@@ -116,7 +116,7 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-[88rem] items-center gap-6 px-6 py-4 lg:px-10">
           <button
             aria-label="Open menu"
-            className="lg:hidden"
+            className="lg:hidden text-maroon"
             onClick={() => setMobile((v) => !v)}
           >
             {mobile ? <Menu className="size-5" /> : <Menu className="size-5" />}
@@ -125,10 +125,10 @@ export function SiteHeader() {
           <Link to="/" className="flex items-center gap-2 sm:gap-3">
             <img src={logo} alt="Dhanalaxmi Logo" className="h-9 sm:h-12 w-auto object-contain" />
             <div className="flex flex-col items-center leading-none pt-1">
-              <span className="font-['Cinzel',_serif] text-base font-bold tracking-[0.05em] sm:text-xl">
+              <span className="font-['Cinzel',_serif] text-base font-bold tracking-[0.05em] sm:text-xl text-maroon">
                 DHANALAXMI
               </span>
-              <span className="mt-1 font-['Cinzel',_serif] text-[6.5px] sm:text-[8.5px] font-semibold tracking-[0.42em] text-silver">
+              <span className="mt-1 font-['Cinzel',_serif] text-[6.5px] sm:text-[8.5px] font-semibold tracking-[0.42em] text-maroon/80">
                 JEWELLERS
               </span>
             </div>
@@ -145,8 +145,8 @@ export function SiteHeader() {
                 >
                   <Link
                     to={item.to}
-                    className="flex items-center gap-1 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-primary-foreground/75 transition-colors hover:text-silver"
-                    activeProps={{ className: "text-primary-foreground" }}
+                    className="flex items-center gap-1 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-maroon/80 transition-colors hover:text-maroon"
+                    activeProps={{ className: "text-maroon font-bold" }}
                   >
                     {item.label}
                     {isShop ? <ChevronDown className="size-3" /> : null}
@@ -156,11 +156,11 @@ export function SiteHeader() {
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-5 lg:ml-0">
+          <div className="ml-auto flex items-center gap-5 lg:ml-0 text-maroon">
             <button
               aria-label="Search"
               onClick={() => setSearchOpen((v) => !v)}
-              className="transition-opacity hover:opacity-60"
+              className="transition-opacity hover:opacity-70"
             >
               <Search className="size-[18px]" />
             </button>
@@ -234,7 +234,7 @@ export function SiteHeader() {
             >
               <ShoppingBag className="size-[18px]" />
               {count > 0 ? (
-                <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-silver text-[9px] font-semibold text-primary">
+                <span className="absolute -right-2 -top-2 flex size-4 items-center justify-center rounded-full bg-maroon text-[9px] font-semibold text-white">
                   {count}
                 </span>
               ) : null}
@@ -248,29 +248,29 @@ export function SiteHeader() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden border-t border-primary-foreground/15 bg-primary"
+              className="overflow-hidden border-t border-maroon/15 bg-[#F6D7B0]"
             >
               <form
                 onSubmit={submitSearch}
                 className="mx-auto flex max-w-[88rem] items-center gap-3 px-6 py-4 lg:px-10"
               >
-                <Search className="size-4 text-silver" />
+                <Search className="size-4 text-maroon" />
                 <input
                   ref={searchRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search earrings, kada, payal, chains…"
                   aria-label="Search products"
-                  className="flex-1 bg-transparent py-2 text-sm text-primary-foreground placeholder:text-primary-foreground/50 outline-none"
+                  className="flex-1 bg-transparent py-2 text-sm text-maroon placeholder:text-maroon/60 outline-none"
                 />
                 <button
                   type="submit"
-                  className="rounded-full bg-primary-foreground px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-maroon"
+                  className="rounded-full bg-maroon px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-maroon-deep"
                 >
                   Search
                 </button>
                 <button type="button" aria-label="Close search" onClick={() => setSearchOpen(false)}>
-                  <X className="size-4" />
+                  <X className="size-4 text-maroon" />
                 </button>
               </form>
             </motion.div>

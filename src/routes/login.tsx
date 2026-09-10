@@ -50,9 +50,10 @@ function LoginPage() {
     toast.success("OTP generated — shown below for testing.");
   };
 
-  const confirmOtp = (e: React.FormEvent) => {
+  const confirmOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!verifyOtp(code)) {
+    const success = await verifyOtp(code);
+    if (!success) {
       toast.error("Incorrect OTP. Please try again.");
       return;
     }
