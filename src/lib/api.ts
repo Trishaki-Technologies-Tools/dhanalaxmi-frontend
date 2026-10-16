@@ -1,4 +1,9 @@
-const API_BASE = (import.meta.env["VITE_API_URL"] as string) || "https://dhanalaxmi-backend-production.up.railway.app/api";
+const API_BASE = import.meta.env.DEV
+  ? ((import.meta.env["VITE_API_URL"] as string) || "http://localhost:5001/api")
+  : ((import.meta.env["VITE_PROD_API_URL"] as string) ||
+     (import.meta.env["VITE_API_URL"] && !import.meta.env["VITE_API_URL"].includes("localhost")
+       ? import.meta.env["VITE_API_URL"]
+       : "/api"));
 
 export function getAuthToken(): string | null {
   try {
