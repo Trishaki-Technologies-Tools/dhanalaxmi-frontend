@@ -23,6 +23,7 @@ export type OrderAddress = {
 
 export type Order = {
   id: string;
+  dbId?: number;
   phone: string;
   createdAt: number;
   total: number;

@@ -86,8 +86,16 @@ function AdminLayout() {
     return <div className="min-h-screen bg-pearl" />;
   }
 
-  if (isLoginRoute || !isAdmin) {
+  if (isLoginRoute) {
     return <Outlet />;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-pearl">
+        <div className="size-8 animate-spin rounded-full border-2 border-maroon border-t-transparent" />
+      </div>
+    );
   }
 
   return (

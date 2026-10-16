@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
 import { orderStages, stageIndexFor, stageIndexToStatus, statusToStageIndex, useOrders, type Order } from "@/lib/orders";
 import { AdminButton, Panel, StatPill } from "@/components/admin/ui";
-import { api } from "@/lib/api";
+import { api, getAuthToken } from "@/lib/api";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin/orders")({
@@ -19,6 +19,7 @@ function AdminOrders() {
 
   useEffect(() => {
     async function load() {
+      if (!getAuthToken()) return;
       try {
         const res = await api.orders.getAllAdmin();
         if (res.orders) {
@@ -26,6 +27,7 @@ function AdminOrders() {
             const isCancelled = o.status === "CANCELLED";
             return {
               id: o.orderNumber || String(o.id),
+              dbId: typeof o.id === "number" ? o.id : undefined,
               phone: o.customerPhone || "",
               createdAt: new Date(o.createdAt).getTime(),
               total: Number(o.totalAmount),
@@ -171,7 +173,8 @@ function AdminOrders() {
                       const newStage = Number(e.target.value);
                       const statusToUpdate = stageIndexToStatus(newStage);
                       try {
-                        await api.orders.updateAdmin(o.id, { status: statusToUpdate });
+                        const targetId = o.dbId ?? o.id;
+                        await api.orders.updateAdmin(targetId, { status: statusToUpdate });
                         setAllOrders(all =>
                           all.map(ord =>
                             ord.id === o.id
@@ -197,7 +200,8 @@ function AdminOrders() {
                       variant="outline"
                       onClick={async () => {
                         try {
-                          await api.orders.updateAdmin(o.id, { paymentStatus: "PAID" });
+                          const targetId = o.dbId ?? o.id;
+                          await api.orders.updateAdmin(targetId, { paymentStatus: "PAID" });
                           setAllOrders(all => all.map(ord => ord.id === o.id ? { ...ord, paid: true } : ord));
                           toast.success("Marked as paid");
                         } catch (err) {
@@ -213,7 +217,8 @@ function AdminOrders() {
                       variant="danger"
                       onClick={async () => {
                         try {
-                          await api.orders.updateAdmin(o.id, { status: "CANCELLED" });
+                          const targetId = o.dbId ?? o.id;
+                          await api.orders.updateAdmin(targetId, { status: "CANCELLED" });
                           setAllOrders(all =>
                             all.map(ord =>
                               ord.id === o.id

@@ -4,7 +4,7 @@ import { formatINR } from "@/lib/catalog";
 import { useCatalog } from "@/lib/catalog-store";
 import { orderStages, stageIndexFor, statusToStageIndex, type Order } from "@/lib/orders";
 import { Panel, StatPill } from "@/components/admin/ui";
-import { api } from "@/lib/api";
+import { api, getAuthToken } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/admin/")({
@@ -17,11 +17,13 @@ function AdminDashboard() {
   const now = Date.now();
 
   useEffect(() => {
+    if (!getAuthToken()) return;
     api.orders.getAllAdmin().then((res) => {
       if (res.orders) {
         setAllOrders(
           res.orders.map((o: any) => ({
             id: o.orderNumber || String(o.id),
+            dbId: typeof o.id === "number" ? o.id : undefined,
             phone: o.customerPhone || "",
             createdAt: new Date(o.createdAt).getTime(),
             total: Number(o.totalAmount),
@@ -49,7 +51,7 @@ function AdminDashboard() {
           }))
         );
       }
-    });
+    }).catch(() => {});
   }, []);
 
   const live = allOrders.filter((o) => (o.status ?? "active") === "active");
