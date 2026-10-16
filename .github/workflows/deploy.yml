@@ -24,14 +24,16 @@ jobs:
       - name: Build React App
         run: npm run build
 
-      - name: Deploy to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          security: loose
-          port: 21
-          local-dir: ./dist/
-          server-dir: ./
+      - name: Deploy to Hostinger via lftp
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y lftp
+          lftp -e "
+            set ftp:ssl-allow yes;
+            set ssl:verify-certificate no;
+            set ftp:passive-mode true;
+            set net:timeout 60;
+            set net:max-retries 3;
+            open -u '${{ secrets.FTP_USERNAME }}','${{ secrets.FTP_PASSWORD }}' ${{ secrets.FTP_SERVER }};
+            mirror --reverse --verbose ./dist/ ./;
+            bye
+          "
