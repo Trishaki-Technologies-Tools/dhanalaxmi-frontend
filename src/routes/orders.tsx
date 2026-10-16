@@ -220,7 +220,7 @@ function OrdersPage() {
                   <p className="text-eyebrow text-maroon">
                     Status · {order.status === "cancelled" ? "Cancelled" : orderStages[active]}
                   </p>
-                  <ol className="mt-5 grid gap-4 sm:grid-cols-5">
+                  <ol className="mt-5 grid gap-4 sm:grid-cols-4">
                     {orderStages.map((stage, idx) => {
                       const done = idx <= active;
                       return (

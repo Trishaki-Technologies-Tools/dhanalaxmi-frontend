@@ -34,7 +34,8 @@ export type Order = {
   subtotal?: number;
   codFee?: number;
   savings?: number;
-  status: "active" | "cancelled" | "DELIVERED" | "SHIPPED" | "CANCELLED" | "PENDING";
+  status: "active" | "cancelled" | "DELIVERED" | "SHIPPED" | "CANCELLED" | "PENDING" | "PROCESSING";
+  rawStatus?: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   stageOverride?: number;
   cancelledAt?: number;
   cancelReason?: string;
@@ -46,25 +47,53 @@ export type Order = {
   };
 };
 
-export const orderStages = ["Confirmed", "Packed", "Shipped", "Out for delivery", "Delivered"] as const;
+export const orderStages = ["Order Placed", "Confirmed", "Shipped", "Delivered"] as const;
 export type OrderStage = (typeof orderStages)[number];
 
-const stageOffsetsMinutes = [0, 1, 2, 4, 6];
+export function statusToStageIndex(status?: string): number {
+  switch (status?.toUpperCase()) {
+    case "PENDING":
+      return 0; // Order Placed
+    case "PROCESSING":
+      return 1; // Confirmed
+    case "SHIPPED":
+      return 2; // Shipped
+    case "DELIVERED":
+      return 3; // Delivered
+    default:
+      return 0; // Order Placed
+  }
+}
 
-export function stageIndexFor(order: Order, now: number) {
+export function stageIndexToStatus(stage: number): "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" {
+  switch (stage) {
+    case 0:
+      return "PENDING";
+    case 1:
+      return "PROCESSING";
+    case 2:
+      return "SHIPPED";
+    case 3:
+      return "DELIVERED";
+    default:
+      return "PENDING";
+  }
+}
+
+export function stageIndexFor(order: Order, _now?: number) {
   if (typeof order.stageOverride === "number") {
     return Math.max(0, Math.min(orderStages.length - 1, order.stageOverride));
   }
-  const minutes = (now - order.createdAt) / 60000;
-  let idx = 0;
-  stageOffsetsMinutes.forEach((offset, i) => {
-    if (minutes >= offset) idx = i;
-  });
-  return idx;
+  if (order.rawStatus) {
+    return statusToStageIndex(order.rawStatus);
+  }
+  return statusToStageIndex(order.status);
 }
 
 export function stageEtaFor(order: Order, index: number) {
-  return order.createdAt + (stageOffsetsMinutes[index] ?? 0) * 60000;
+  // Estimated progress in days
+  const daysOffset = [0, 1, 2, 4];
+  return order.createdAt + (daysOffset[index] ?? 0) * 86400000;
 }
 
 type OrdersContextValue = {
@@ -77,23 +106,25 @@ type OrdersContextValue = {
       status?: Order["status"];
     }
   ) => Promise<Order>;
+  addOrder: (order: Order) => void;
   getOrder: (id: string) => Order | undefined;
   updateOrder: (id: string, patch: Partial<Order>) => void;
-  cancelOrder: (id: string, reason: string) => void;
+  cancelOrder: (id: string, reason: string) => Promise<void> | void;
   requestReturn: (id: string, type: "return" | "exchange", reason: string) => void;
   findOrder: (id: string, contact: string) => Promise<Order | undefined>;
 };
 
-export function canCancel(order: Order, now: number) {
-  return (order.status ?? "active") === "active" && stageIndexFor(order, now) < 2;
+export function canCancel(order: Order, _now?: number) {
+  const isCancelled = order.status === "cancelled" || order.rawStatus === "CANCELLED" || order.status === "CANCELLED";
+  if (isCancelled) return false;
+  // Cancellation is only allowed before shipping / delivery (Order Placed or Confirmed)
+  return stageIndexFor(order) < 2;
 }
 
-export function canReturn(order: Order, now: number) {
-  return (
-    (order.status ?? "active") === "active" &&
-    stageIndexFor(order, now) >= 4 &&
-    !order.request
-  );
+export function canReturn(order: Order, _now?: number) {
+  const isCancelled = order.status === "cancelled" || order.rawStatus === "CANCELLED" || order.status === "CANCELLED";
+  if (isCancelled) return false;
+  return stageIndexFor(order) >= 3 && !order.request;
 }
 
 const OrdersContext = createContext<OrdersContextValue | null>(null);
@@ -113,47 +144,52 @@ function readStored(): Order[] {
 export function OrdersProvider({ children }: { children: ReactNode }) {
   const [all, setAll] = useState<Order[]>([]);
   const [now, setNow] = useState(() => Date.now());
-  const { phone, user } = useAuth();
+  const { phone, user, isAuthenticated } = useAuth();
 
   // Load orders from Backend MySQL DB on startup / auth change
   useEffect(() => {
     async function loadUserOrders() {
       const token = localStorage.getItem("dj-auth-token");
-      if (!token) {
+      if (!token || !isAuthenticated) {
         setAll(readStored());
         return;
       }
       try {
         const res = await api.orders.getUserOrders();
         if (res.orders && Array.isArray(res.orders)) {
-          const formattedOrders: Order[] = res.orders.map((o: any): Order => ({
-            id: o.orderNumber || String(o.id),
-            phone: o.customerPhone || phone || "",
-            createdAt: new Date(o.createdAt).getTime(),
-            total: Number(o.totalAmount),
-            method: (o.paymentMethod || "UPI").toLowerCase(),
-            paid: o.paymentStatus === "PAID",
-            shipTo: `${o.customerName}, ${o.city}`,
-            address: {
-              name: o.customerName,
-              email: o.customerEmail || "",
-              phone: o.customerPhone,
-              address: o.addressLine1,
-              city: o.city,
-              pincode: o.pincode,
-            },
-            subtotal: Number(o.totalAmount),
-            codFee: 0,
-            savings: 0,
-            status: (o.status === "CANCELLED" ? "cancelled" : "active") as Order["status"],
-            lines: o.items.map((item: any) => ({
-              slug: item.productSlug || `item-${item.id}`,
-              name: item.productName || "Silver Jewelry",
-              image: item.productImage || "",
-              qty: item.quantity,
-              price: Number(item.price),
-            })),
-          }));
+          const formattedOrders: Order[] = res.orders.map((o: any): Order => {
+            const isCancelled = o.status === "CANCELLED";
+            return {
+              id: o.orderNumber || String(o.id),
+              phone: o.customerPhone || phone || "",
+              createdAt: new Date(o.createdAt).getTime(),
+              total: Number(o.totalAmount),
+              method: (o.paymentMethod || "UPI").toLowerCase(),
+              paid: o.paymentStatus === "PAID",
+              shipTo: `${o.customerName}, ${o.city}`,
+              address: {
+                name: o.customerName,
+                email: o.customerEmail || "",
+                phone: o.customerPhone,
+                address: o.addressLine1,
+                city: o.city,
+                pincode: o.pincode,
+              },
+              subtotal: Number(o.totalAmount),
+              codFee: 0,
+              savings: 0,
+              status: (isCancelled ? "cancelled" : "active") as Order["status"],
+              rawStatus: o.status,
+              stageOverride: statusToStageIndex(o.status),
+              lines: o.items.map((item: any) => ({
+                slug: item.productSlug || `item-${item.id}`,
+                name: item.productName || "Silver Jewelry",
+                image: item.productImage || "",
+                qty: item.quantity,
+                price: Number(item.price),
+              })),
+            };
+          });
           setAll(formattedOrders);
           return;
         }
@@ -164,7 +200,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
 
     loadUserOrders();
-  }, [phone, user]);
+  }, [isAuthenticated, phone, user]);
 
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 5000);
@@ -200,6 +236,8 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         id: dbOrder.orderNumber || String(dbOrder.id),
         createdAt: new Date(dbOrder.createdAt).getTime(),
         status: "active",
+        rawStatus: dbOrder.status || "PENDING",
+        stageOverride: statusToStageIndex(dbOrder.status || "PENDING"),
       };
     } catch (err) {
       // Fallback local ID generation if offline
@@ -208,6 +246,8 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         id: `DJ${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
         createdAt: Date.now(),
         status: "active",
+        rawStatus: "PENDING",
+        stageOverride: 0,
       };
     }
 
@@ -222,6 +262,20 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     });
 
     return createdOrder;
+  }, []);
+
+  const addOrder = useCallback((order: Order) => {
+    setAll((prev) => {
+      const exists = prev.some((o) => o.id === order.id);
+      if (exists) return prev;
+      const next = [order, ...prev];
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
   }, []);
 
   const orders = useMemo(
@@ -248,8 +302,18 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
   );
 
   const cancelOrder = useCallback(
-    (id: string, reason: string) => {
-      updateOrder(id, { status: "cancelled", cancelledAt: Date.now(), cancelReason: reason });
+    async (id: string, reason: string) => {
+      try {
+        await api.orders.cancelCustomer(id, { reason });
+      } catch (e) {
+        console.warn("Failed to cancel order on backend:", e);
+      }
+      updateOrder(id, {
+        status: "cancelled",
+        rawStatus: "CANCELLED",
+        cancelledAt: Date.now(),
+        cancelReason: reason,
+      });
     },
     [updateOrder]
   );
@@ -285,6 +349,8 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
             },
             subtotal: Number(dbOrder.totalAmount),
             status: dbOrder.status === "CANCELLED" ? "cancelled" : "active",
+            rawStatus: dbOrder.status,
+            stageOverride: statusToStageIndex(dbOrder.status),
             lines: dbOrder.items.map((item: any) => ({
               slug: item.productSlug || `item-${item.id}`,
               name: item.productName || "Silver Jewelry",
@@ -319,13 +385,14 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       allOrders: all,
       now,
       placeOrder,
+      addOrder,
       getOrder,
       updateOrder,
       cancelOrder,
       requestReturn,
       findOrder,
     }),
-    [orders, all, now, placeOrder, getOrder, updateOrder, cancelOrder, requestReturn, findOrder]
+    [orders, all, now, placeOrder, addOrder, getOrder, updateOrder, cancelOrder, requestReturn, findOrder]
   );
 
   return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;

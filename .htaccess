@@ -1,0 +1,29 @@
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType text/css .css
+  AddType image/svg+xml .svg
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1. Forward /api/ requests to the Node.js backend API
+  RewriteCond %{REQUEST_URI} ^/api/ [NC]
+  RewriteRule ^api/(.*)$ http://127.0.0.1:5001/api/$1 [P,L]
+
+  # 2. If dist folder exists, serve static files directly from dist/
+  RewriteCond %{DOCUMENT_ROOT}/dist/$1 -f
+  RewriteRule ^(.*)$ dist/$1 [L]
+
+  # 3. If dist folder exists, fallback non-file routes to dist/index.html
+  RewriteCond %{DOCUMENT_ROOT}/dist/index.html -f
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ dist/index.html [L]
+
+  # 4. Standard SPA fallback if document root is set directly to dist
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>

@@ -1,4 +1,4 @@
-const API_BASE = "https://dhanalaxmi-backend-production.up.railway.app/api";
+const API_BASE = (import.meta.env["VITE_API_URL"] as string) || "https://dhanalaxmi-backend-production.up.railway.app/api";
 
 export function getAuthToken(): string | null {
   try {
@@ -64,6 +64,15 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   if (!response.ok) {
+    if (response.status === 401 && !endpoint.includes("/auth/login") && !endpoint.includes("/auth/verify-otp")) {
+      removeAuthToken();
+      try {
+        localStorage.removeItem("dj-auth-v1");
+        localStorage.removeItem("dj-user-profile");
+      } catch {
+        /* ignore */
+      }
+    }
     throw new Error(data?.message || `Server responded with status ${response.status}`);
   }
 
@@ -190,8 +199,28 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       }),
+    createRazorpayOrder: (data: { amount: number; currency?: string; receipt?: string }) =>
+      request<{ success: boolean; orderId: string; amount: number; currency: string; keyId: string }>("/orders/razorpay/create-order", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    verifyRazorpayPayment: (data: {
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+      orderDetails: any;
+    }) =>
+      request<{ success: boolean; order: any }>("/orders/razorpay/verify", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
     getUserOrders: () => request<{ orders: any[] }>("/orders/user"),
     track: (identifier: string) => request<{ order: any }>(`/orders/track/${identifier}`),
+    cancelCustomer: (identifier: string, data?: { reason?: string }) =>
+      request<{ success: boolean; message: string; order: any }>(`/orders/${identifier}/cancel`, {
+        method: "PUT",
+        body: JSON.stringify(data || {}),
+      }),
     getAllAdmin: () => request<{ orders: any[] }>("/orders/admin/all"),
     getAnalytics: () => request<{ totalRevenue: number; totalOrders: number; averageOrderValue: number; chartData: any[] }>("/orders/admin/analytics"),
     updateAdmin: (id: string | number, data: any) =>

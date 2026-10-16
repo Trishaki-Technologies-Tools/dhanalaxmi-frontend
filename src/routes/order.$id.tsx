@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   ArrowLeft,
@@ -21,13 +21,16 @@ import { formatINR } from "@/lib/catalog";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { downloadInvoice } from "@/lib/invoice";
+import { api } from "@/lib/api";
 import {
   canCancel,
   canReturn,
   orderStages,
   stageEtaFor,
   stageIndexFor,
+  statusToStageIndex,
   useOrders,
+  type Order,
 } from "@/lib/orders";
 
 export const Route = createFileRoute("/order/$id")({
@@ -71,7 +74,55 @@ function OrderDetailPage() {
   const { add, setOpen } = useCart();
   const [panel, setPanel] = useState<null | "cancel" | "return" | "exchange">(null);
   const [reason, setReason] = useState("");
-  const order = getOrder(id);
+  const [liveOrder, setLiveOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!id) return;
+    api.orders.track(id)
+      .then((res) => {
+        if (!active || !res.order) return;
+        const dbOrder = res.order;
+        const isCancelled = dbOrder.status === "CANCELLED";
+        const formatted: Order = {
+          id: dbOrder.orderNumber || String(dbOrder.id),
+          phone: dbOrder.customerPhone || "",
+          createdAt: new Date(dbOrder.createdAt).getTime(),
+          total: Number(dbOrder.totalAmount),
+          method: (dbOrder.paymentMethod || "UPI").toLowerCase(),
+          paid: dbOrder.paymentStatus === "PAID",
+          shipTo: `${dbOrder.customerName}, ${dbOrder.city}`,
+          address: {
+            name: dbOrder.customerName,
+            email: dbOrder.customerEmail || "",
+            phone: dbOrder.customerPhone,
+            address: dbOrder.addressLine1,
+            city: dbOrder.city,
+            pincode: dbOrder.pincode,
+          },
+          subtotal: Number(dbOrder.totalAmount),
+          codFee: 0,
+          savings: 0,
+          status: (isCancelled ? "cancelled" : "active") as Order["status"],
+          rawStatus: dbOrder.status,
+          stageOverride: statusToStageIndex(dbOrder.status),
+          lines: (dbOrder.items || []).map((item: any) => ({
+            slug: item.productSlug || `item-${item.id}`,
+            name: item.productName || "Silver Jewelry",
+            image: item.productImage || "",
+            qty: item.quantity,
+            price: Number(item.price),
+          })),
+        };
+        setLiveOrder(formatted);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  const order = liveOrder || getOrder(id);
 
   if (!hydrated) {
     return (
@@ -355,16 +406,8 @@ function OrderDetailPage() {
             <h2 className="font-display text-2xl">Pricing breakdown</h2>
             <dl className="mt-5 space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Price</dt>
-                <dd className="font-price">{formatINR(subtotal / 1.03)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">CGST (1.5%)</dt>
-                <dd className="font-price">{formatINR((subtotal / 1.03) * 0.015)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">SGST (1.5%)</dt>
-                <dd className="font-price">{formatINR((subtotal / 1.03) * 0.015)}</dd>
+                <dt className="text-muted-foreground">Subtotal</dt>
+                <dd className="font-price">{formatINR(subtotal)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Insured shipping</dt>

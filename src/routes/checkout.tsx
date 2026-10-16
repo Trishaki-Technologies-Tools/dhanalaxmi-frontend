@@ -19,6 +19,7 @@ import { useOrders } from "@/lib/orders";
 import { useProfile } from "@/lib/profile";
 import { useCatalog } from "@/lib/catalog-store";
 import { api } from "@/lib/api";
+import { loadRazorpayScript, type RazorpayOptions, type RazorpayResponse } from "@/lib/razorpay";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -41,11 +42,10 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
-type PayMethod = "upi" | "card" | "cod";
+type PayMethod = "razorpay" | "cod";
 
 const payMethods: Array<{ id: PayMethod; label: string; hint: string; Icon: typeof CreditCard }> = [
-  { id: "upi", label: "UPI", hint: "GPay · PhonePe · Paytm", Icon: Smartphone },
-  { id: "card", label: "Card", hint: "Visa · Mastercard · RuPay", Icon: CreditCard },
+  { id: "razorpay", label: "Online Payment", hint: "UPI · Cards · NetBanking", Icon: Smartphone },
   { id: "cod", label: "Cash on delivery", hint: "₹100 handling fee", Icon: Banknote },
 ];
 
@@ -55,11 +55,11 @@ const inputClass =
 function CheckoutPage() {
   const { items, subtotal, savings, clear, coupon, applyCoupon, discount } = useCart();
   const { phone: authPhone, user } = useAuth();
-  const { placeOrder } = useOrders();
+  const { placeOrder, addOrder } = useOrders();
   const { profile, addresses, defaultAddress, addAddress } = useProfile();
   const { settings } = useCatalog();
   const navigate = useNavigate();
-  const [method, setMethod] = useState<PayMethod>("upi");
+  const [method, setMethod] = useState<PayMethod>("razorpay");
   const [processing, setProcessing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -126,45 +126,180 @@ function CheckoutPage() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const buyerPhone = normalizePhone(String(form.get("phone") ?? ""));
-    const city = String(form.get("city") ?? "");
-    const name = String(form.get("name") ?? "");
-    const email = String(form.get("email") ?? "");
-    const address = String(form.get("address") ?? "");
-    const pincode = String(form.get("pincode") ?? "");
-    if (form.get("saveAddress") === "on") {
-      addAddress({ label: "Saved at checkout", name, phone: buyerPhone, address, city, pincode });
+    const city = String(form.get("city") ?? "").trim();
+    const name = String(form.get("name") ?? "").trim();
+    const email = String(form.get("email") ?? "").trim();
+    const address = String(form.get("address") ?? "").trim();
+    const pincode = String(form.get("pincode") ?? "").trim();
+
+    if (!buyerPhone || buyerPhone.length < 10) {
+      toast.error("Please enter a valid 10-digit mobile number.");
+      return;
     }
+
+    if (form.get("saveAddress") === "on") {
+      try {
+        await addAddress({ label: "Saved at checkout", name, phone: buyerPhone, address, city, pincode });
+      } catch {
+        // Ignore guest / offline error
+      }
+    }
+
     setProcessing(true);
-    
+
     try {
-      const paid = method === "cod" ? "0" : "1";
-      const order = await placeOrder({
-        phone: authPhone ?? buyerPhone,
-        total,
-        method,
-        paid: paid === "1",
-        shipTo: [name, city].filter(Boolean).join(", "),
-        address: { name, email, phone: buyerPhone, address, city, pincode },
-        subtotal,
-        codFee,
-        savings,
-        lines: items.map(({ product, qty }) => ({
-          slug: product.slug,
-          name: product.name,
-          image: product.image,
-          qty,
+      if (method === "cod") {
+        const order = await placeOrder({
+          phone: authPhone ?? buyerPhone,
+          total,
+          method: "cod",
+          paid: false,
+          shipTo: [name, city].filter(Boolean).join(", "),
+          address: { name, email, phone: buyerPhone, address, city, pincode },
+          subtotal,
+          codFee,
+          savings,
+          lines: items.map(({ product, qty }) => ({
+            slug: product.slug,
+            name: product.name,
+            image: product.image,
+            qty,
+            price: product.price,
+          })),
+        });
+        clear();
+        toast.success("Order placed successfully — Cash on delivery.");
+        navigate({
+          to: "/order-confirmed",
+          search: { order: order.id, total: String(total), paid: "0", method: "cod" },
+        });
+        return;
+      }
+
+      // Online Razorpay Payment flow
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !window.Razorpay) {
+        throw new Error("Unable to load Razorpay payment SDK. Please check your network and try again.");
+      }
+
+      // 1. Create order on backend
+      const rzpRes = await api.orders.createRazorpayOrder({
+        amount: total,
+        currency: "INR",
+        receipt: `rcpt_${Date.now()}`,
+      });
+
+      if (!rzpRes.orderId) {
+        throw new Error("Failed to create Razorpay payment order.");
+      }
+
+      const orderPayload = {
+        customerName: name,
+        customerEmail: email || user?.email || undefined,
+        customerPhone: buyerPhone,
+        addressLine1: address,
+        city,
+        state: "Karnataka",
+        pincode,
+        totalAmount: total,
+        items: items.map(({ product, qty }) => ({
+          productId: product.id,
+          productName: product.name,
+          productSlug: product.slug,
+          productImage: product.image,
           price: product.price,
+          quantity: qty,
         })),
-      });
-      clear();
-      toast.success("Order placed — a confirmation is on its way.");
-      navigate({
-        to: "/order-confirmed",
-        search: { order: order.id, total: String(total), paid, method },
-      });
+      };
+
+      const razorpayKey = rzpRes.keyId || (import.meta.env["VITE_RAZORPAY_KEY_ID"] as string) || "";
+      if (!razorpayKey) {
+        throw new Error("Razorpay Key ID is not configured. Please ensure RAZORPAY_KEY_ID is set in your environment.");
+      }
+
+      // 2. Open Razorpay Checkout modal
+      const options: RazorpayOptions = {
+        key: razorpayKey,
+        amount: rzpRes.amount,
+        currency: rzpRes.currency || "INR",
+        name: "Dhanalaxmi Jeweler's",
+        description: "Hallmarked 925 Pure Silver",
+        order_id: rzpRes.orderId,
+        prefill: {
+          name,
+          email: email || undefined,
+          contact: buyerPhone,
+        },
+        theme: {
+          color: "#800020",
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false);
+            toast.info("Payment window dismissed. Your bag is saved.");
+          },
+        },
+        handler: async (response: RazorpayResponse) => {
+          try {
+            setProcessing(true);
+            const verifyRes = await api.orders.verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderDetails: orderPayload,
+            });
+
+            const confirmed = verifyRes.order;
+            const orderId = confirmed.orderNumber || String(confirmed.id);
+
+            // Add verified order to local storage/context
+            addOrder({
+              id: orderId,
+              phone: buyerPhone,
+              createdAt: new Date(confirmed.createdAt).getTime(),
+              total,
+              method: "razorpay",
+              paid: true,
+              shipTo: [name, city].filter(Boolean).join(", "),
+              address: { name, email, phone: buyerPhone, address, city, pincode },
+              subtotal,
+              codFee: 0,
+              savings,
+              status: "active",
+              lines: items.map(({ product, qty }) => ({
+                slug: product.slug,
+                name: product.name,
+                image: product.image,
+                qty,
+                price: product.price,
+              })),
+            });
+
+            clear();
+            toast.success("Payment verified! Your order has been placed.");
+            navigate({
+              to: "/order-confirmed",
+              search: {
+                order: orderId,
+                total: String(total),
+                paid: "1",
+                method: "razorpay",
+              },
+            });
+          } catch (verifyErr: any) {
+            console.error("Verification error:", verifyErr);
+            toast.error(verifyErr.message || "Payment verification failed. If payment was deducted, please contact concierge.");
+          } finally {
+            setProcessing(false);
+          }
+        },
+      };
+
+      const rzpInstance = new window.Razorpay(options);
+      rzpInstance.open();
     } catch (err: any) {
-      toast.error(err.message || "Failed to place order. Please try again.");
-    } finally {
+      console.error("Checkout error:", err);
+      toast.error(err.message || "Failed to process order. Please try again.");
       setProcessing(false);
     }
   };
@@ -255,69 +390,41 @@ function CheckoutPage() {
           </section>
 
           <section className="luxe-card p-7 sm:p-9">
-            <h2 className="font-display text-2xl">Payment</h2>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <h2 className="font-display text-2xl">Payment Method</h2>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {payMethods.map(({ id, label, hint, Icon }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setMethod(id)}
-                  className={`rounded-2xl border p-4 text-left transition-colors ${
+                  className={`rounded-2xl border p-5 text-left transition-colors cursor-pointer ${
                     method === id
-                      ? "border-maroon bg-maroon-soft text-maroon"
+                      ? "border-maroon bg-maroon-soft text-maroon shadow-xs"
                       : "border-border hover:border-maroon/40"
                   }`}
                 >
-                  <Icon className="size-4" />
-                  <p className="mt-3 text-sm font-semibold">{label}</p>
-                  <p className="text-[11px] text-muted-foreground">{hint}</p>
+                  <div className="flex items-center justify-between">
+                    <Icon className="size-5" />
+                    {id === "razorpay" && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-maroon bg-maroon/10 px-2.5 py-0.5 rounded-full">
+                        Recommended
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-3 text-base font-semibold">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>
                 </button>
               ))}
             </div>
 
-            {method === "upi" ? (
-              <div className="mt-6">
-                <label htmlFor="upi" className="text-eyebrow">
-                  UPI ID
-                </label>
-                <input id="upi" name="upi" required placeholder="name@bank" className={inputClass} />
-              </div>
-            ) : null}
-
-            {method === "card" ? (
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <label htmlFor="cardnumber" className="text-eyebrow">
-                    Card number
-                  </label>
-                  <input
-                    id="cardnumber"
-                    name="cardnumber"
-                    required
-                    inputMode="numeric"
-                    placeholder="4242 4242 4242 4242"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="expiry" className="text-eyebrow">
-                    Expiry
-                  </label>
-                  <input id="expiry" name="expiry" required placeholder="MM/YY" className={inputClass} />
-                </div>
-                <div>
-                  <label htmlFor="cvc" className="text-eyebrow">
-                    CVC
-                  </label>
-                  <input id="cvc" name="cvc" required placeholder="123" className={inputClass} />
-                </div>
-              </div>
-            ) : null}
 
             {method === "cod" ? (
-              <p className="mt-6 text-sm text-muted-foreground">
-                Pay in cash when your insured parcel arrives. A ₹100 handling fee applies.
-              </p>
+              <div className="mt-6 rounded-2xl border border-border bg-background p-5 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Cash on Delivery</p>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                  Pay securely with cash or UPI directly when your insured parcel arrives at your doorstep. A ₹100 handling fee applies.
+                </p>
+              </div>
             ) : null}
           </section>
         </div>
@@ -394,18 +501,6 @@ function CheckoutPage() {
                 <dd className="font-medium">{items.reduce((acc, { product, qty }) => acc + (product.weight || 0) * qty, 0).toFixed(2)}g</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Making Charges</dt>
-                <dd className="font-price">
-                  {formatINR(items.reduce((acc, { product, qty }) => acc + (product.makingCharges || 0) * (product.weight || 0) * qty, 0))}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">GST (3%)</dt>
-                <dd className="font-price">
-                  {formatINR(subtotal - (subtotal / 1.03))}
-                </dd>
-              </div>
-              <div className="flex justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
                 <dd className="font-price">{formatINR(subtotal)}</dd>
               </div>
@@ -445,12 +540,12 @@ function CheckoutPage() {
             >
               {processing ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" /> Processing
+                  <Loader2 className="size-4 animate-spin" /> Processing payment...
                 </>
               ) : method === "cod" ? (
-                "Place order"
+                "Place Cash on Delivery Order"
               ) : (
-                `Pay ${formatINR(total)}`
+                `Pay ${formatINR(total)} via Razorpay`
               )}
             </motion.button>
             {hasOutOfStock && (

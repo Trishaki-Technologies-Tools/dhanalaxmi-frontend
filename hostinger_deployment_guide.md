@@ -55,20 +55,34 @@ Hostinger's server (usually LiteSpeed or Apache) needs an `.htaccess` file in yo
 Using the Hostinger **File Manager**, create a file named `.htaccess` in the root folder of your subdomain and add:
 
 ```apache
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType text/css .css
+  AddType image/svg+xml .svg
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   
   # 1. Forward ALL /api/* requests to your Node.js backend port
-  # (Replace 5001 with whatever port Hostinger assigns your Node app)
   RewriteCond %{REQUEST_URI} ^/api/ [NC]
   RewriteRule ^(.*)$ http://127.0.0.1:5001/$1 [P,L]
 
-  # 2. Forward all other frontend requests to the built static files
-  RewriteCond %{DOCUMENT_ROOT}/.output/public/$1 -f
-  RewriteRule ^(.*)$ .output/public/$1 [L]
+  # 2. Forward all frontend requests to built static files in dist/
+  RewriteCond %{DOCUMENT_ROOT}/dist/$1 -f
+  RewriteRule ^(.*)$ dist/$1 [L]
   
-  # 3. Fallback for TanStack Router (SPA Routing)
-  RewriteRule ^(.*)$ .output/public/index.html [L]
+  # 3. Fallback for TanStack Router (SPA Client-Side Routing)
+  RewriteCond %{DOCUMENT_ROOT}/dist/index.html -f
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ dist/index.html [L]
+
+  # 4. Fallback if Document Root is already pointed directly into dist
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
 </IfModule>
 ```
 

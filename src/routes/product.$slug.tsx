@@ -187,7 +187,6 @@ function ProductPage() {
               {[
                 ["Metal", product.metal],
                 ["Net weight", `${product.weight} g`],
-                ...(product.makingCharges ? [["Making charges", `${formatINR(product.makingCharges)} / g`]] : []),
                 ["Hallmark", "BIS 925 assayed"],
                 ["Occasion", product.occasion],
                 ["Collection", product.collection],

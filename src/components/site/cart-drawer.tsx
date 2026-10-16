@@ -139,22 +139,6 @@ export function CartDrawer() {
                         {items.reduce((acc, { product, qty }) => acc + (product.weight || 0) * qty, 0).toFixed(2)}g
                       </span>
                     </div>
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                        Making Charges
-                      </span>
-                      <span className="text-sm font-medium">
-                        {formatINR(items.reduce((acc, { product, qty }) => acc + (product.makingCharges || 0) * (product.weight || 0) * qty, 0))}
-                      </span>
-                    </div>
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                        GST (3%)
-                      </span>
-                      <span className="text-sm font-medium">
-                        {formatINR(subtotal - (subtotal / 1.03))}
-                      </span>
-                    </div>
                   </div>
                   <div className="flex items-baseline justify-between">
                     <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">

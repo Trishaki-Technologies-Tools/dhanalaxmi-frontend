@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/lib/auth";
-import { api } from "@/lib/api";
+import { api, getAuthToken } from "@/lib/api";
 
 export type Address = {
   id: string;
@@ -63,7 +63,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !getAuthToken()) {
       setStore(emptyStore(phone, user?.name));
       return;
     }
@@ -130,6 +130,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const addAddress = useCallback(
     async (input: Omit<Address, "id">) => {
       try {
+        if (!getAuthToken()) {
+          const localAddress: Address = {
+            ...input,
+            id: `local-${Date.now()}`,
+          };
+          setStore((s) => ({
+            ...s,
+            addresses: [...s.addresses, localAddress],
+          }));
+          return localAddress;
+        }
+
         const res = await api.addresses.create(input);
         const a = res.address;
         const newAddress: Address = {
@@ -150,8 +162,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }));
         return newAddress;
       } catch (err) {
-        console.error("Failed to add address", err);
-        throw err;
+        console.warn("Saving address locally:", err);
+        const localAddress: Address = {
+          ...input,
+          id: `local-${Date.now()}`,
+        };
+        setStore((s) => ({
+          ...s,
+          addresses: [...s.addresses, localAddress],
+        }));
+        return localAddress;
       }
     },
     [],

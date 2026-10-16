@@ -162,7 +162,7 @@ function TrackPage() {
           ) : (
             <div className="mt-7 rounded-2xl bg-maroon-soft/60 p-5">
               <p className="text-eyebrow text-maroon">Status · {orderStages[active]}</p>
-              <ol className="mt-5 grid gap-4 sm:grid-cols-5">
+              <ol className="mt-5 grid gap-4 sm:grid-cols-4">
                 {orderStages.map((stage, idx) => {
                   const done = idx <= active;
                   return (

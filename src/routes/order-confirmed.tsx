@@ -14,13 +14,13 @@ export const Route = createFileRoute("/order-confirmed")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Order Confirmed — Dhanalaxmi Jeweler's" },
+      { title: "Order Placed — Dhanalaxmi Jeweler's" },
       {
         name: "description",
         content:
-          "Your hallmarked 925 silver order is confirmed and will be dispatched with free insured shipping.",
+          "Your hallmarked 925 silver order is placed and will be dispatched with free insured shipping once confirmed.",
       },
-      { property: "og:title", content: "Order Confirmed — Dhanalaxmi Jeweler's" },
+      { property: "og:title", content: "Order Placed — Dhanalaxmi Jeweler's" },
       { property: "og:description", content: "Thank you for shopping with Dhanalaxmi Jeweler's." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/order-confirmed")({
 });
 
 const methodLabels: Record<string, string> = {
+  razorpay: "Razorpay (UPI / Card / NetBanking)",
   upi: "UPI",
   card: "Card",
   cod: "Cash on delivery",
@@ -51,12 +52,12 @@ function OrderConfirmedPage() {
       </motion.span>
 
       <p className="mt-8 text-eyebrow text-maroon">Order {order}</p>
-      <h1 className="mt-3 font-display text-4xl sm:text-5xl">Thank you — your order is confirmed</h1>
+      <h1 className="mt-3 font-display text-4xl sm:text-5xl">Thank you — your order is placed</h1>
       <p className="mt-4 text-sm text-muted-foreground">
         {paid === "1"
           ? `Payment of ₹${amount.toLocaleString("en-IN")} received via ${methodLabels[method] ?? method}.`
           : `₹${amount.toLocaleString("en-IN")} payable on delivery (${methodLabels[method] ?? method}).`}{" "}
-        A confirmation with your hallmark certificate follows by email.
+        Your order is placed. Our team will verify and dispatch it shortly.
       </p>
 
       <div className="mt-12 grid gap-4 sm:grid-cols-2">

@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/lib/auth";
-import { api } from "@/lib/api";
+import { api, getAuthToken } from "@/lib/api";
 import { toast } from "sonner";
 
 type WishlistContextValue = {
@@ -24,7 +24,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<number[]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !getAuthToken()) {
       setItems([]);
       return;
     }
@@ -32,7 +32,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     async function loadWishlist() {
       try {
         const res = await api.wishlist.get();
-        if (res.wishlist) {
+        if (res?.wishlist) {
           setItems(res.wishlist.map((item: any) => item.productId));
         }
       } catch (err) {

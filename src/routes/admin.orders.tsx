@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/catalog";
-import { orderStages, stageIndexFor, useOrders, type Order } from "@/lib/orders";
+import { orderStages, stageIndexFor, stageIndexToStatus, statusToStageIndex, useOrders, type Order } from "@/lib/orders";
 import { AdminButton, Panel, StatPill } from "@/components/admin/ui";
 import { api } from "@/lib/api";
 import { useEffect } from "react";
@@ -22,31 +22,36 @@ function AdminOrders() {
       try {
         const res = await api.orders.getAllAdmin();
         if (res.orders) {
-          const formattedOrders = res.orders.map((o: any) => ({
-            id: o.orderNumber || String(o.id),
-            phone: o.customerPhone || "",
-            createdAt: new Date(o.createdAt).getTime(),
-            total: Number(o.totalAmount),
-            method: (o.paymentMethod || "UPI").toLowerCase(),
-            paid: o.paymentStatus === "PAID",
-            shipTo: `${o.customerName}, ${o.city}`,
-            address: {
-              name: o.customerName,
-              email: o.customerEmail || "",
-              phone: o.customerPhone,
-              address: o.addressLine1,
-              city: o.city,
-              pincode: o.pincode,
-            },
-            status: (o.status === "CANCELLED" ? "cancelled" : "active") as Order["status"],
-            lines: o.items.map((item: any) => ({
-              slug: item.productSlug,
-              name: item.productName,
-              image: item.productImage,
-              qty: item.quantity,
-              price: Number(item.price),
-            })),
-          }));
+          const formattedOrders = res.orders.map((o: any) => {
+            const isCancelled = o.status === "CANCELLED";
+            return {
+              id: o.orderNumber || String(o.id),
+              phone: o.customerPhone || "",
+              createdAt: new Date(o.createdAt).getTime(),
+              total: Number(o.totalAmount),
+              method: (o.paymentMethod || "UPI").toLowerCase(),
+              paid: o.paymentStatus === "PAID",
+              shipTo: `${o.customerName}, ${o.city}`,
+              address: {
+                name: o.customerName,
+                email: o.customerEmail || "",
+                phone: o.customerPhone,
+                address: o.addressLine1,
+                city: o.city,
+                pincode: o.pincode,
+              },
+              status: (isCancelled ? "cancelled" : "active") as Order["status"],
+              rawStatus: o.status,
+              stageOverride: statusToStageIndex(o.status),
+              lines: (o.items || []).map((item: any) => ({
+                slug: item.productSlug,
+                name: item.productName,
+                image: item.productImage,
+                qty: item.quantity,
+                price: Number(item.price),
+              })),
+            };
+          });
           setAllOrders(formattedOrders);
         }
       } catch (err) {
@@ -164,13 +169,19 @@ function AdminOrders() {
                     disabled={cancelled}
                     onChange={async (e) => {
                       const newStage = Number(e.target.value);
+                      const statusToUpdate = stageIndexToStatus(newStage);
                       try {
-                        const statusToUpdate = newStage === 4 ? "DELIVERED" : "PROCESSING";
                         await api.orders.updateAdmin(o.id, { status: statusToUpdate });
-                        setAllOrders(all => all.map(ord => ord.id === o.id ? { ...ord, stageOverride: newStage } : ord));
+                        setAllOrders(all =>
+                          all.map(ord =>
+                            ord.id === o.id
+                              ? { ...ord, rawStatus: statusToUpdate, stageOverride: newStage }
+                              : ord
+                          )
+                        );
                         toast.success(`${o.id} → ${orderStages[newStage]}`);
-                      } catch (err) {
-                        toast.error("Failed to update status");
+                      } catch (err: any) {
+                        toast.error(err?.message || "Failed to update status");
                       }
                     }}
                     className="rounded-full border border-border bg-background px-3 py-1.5 text-xs outline-none focus:border-maroon disabled:opacity-40"
@@ -197,16 +208,22 @@ function AdminOrders() {
                       Mark paid
                     </AdminButton>
                   )}
-                  {!cancelled && (
+                  {!cancelled && stage !== 3 && o.rawStatus !== "DELIVERED" && (
                     <AdminButton
                       variant="danger"
                       onClick={async () => {
                         try {
                           await api.orders.updateAdmin(o.id, { status: "CANCELLED" });
-                          setAllOrders(all => all.map(ord => ord.id === o.id ? { ...ord, status: "cancelled" } : ord));
+                          setAllOrders(all =>
+                            all.map(ord =>
+                              ord.id === o.id
+                                ? { ...ord, status: "cancelled", rawStatus: "CANCELLED" }
+                                : ord
+                            )
+                          );
                           toast.success("Order cancelled");
-                        } catch (err) {
-                          toast.error("Failed to cancel order");
+                        } catch (err: any) {
+                          toast.error(err?.message || "Failed to cancel order");
                         }
                       }}
                     >

@@ -49,9 +49,11 @@ export function normalizePhone(input: string) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Synchronously hydrate from localStorage to prevent flash of logged-out state
+  // Synchronously hydrate from localStorage only if a valid auth token is present
   const [phone, setPhone] = useState<string | null>(() => {
     try {
+      const token = window.localStorage.getItem("dj-auth-token");
+      if (!token) return null;
       return window.localStorage.getItem(STORAGE_KEY);
     } catch {
       return null;
@@ -60,6 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
+      const token = window.localStorage.getItem("dj-auth-token");
+      if (!token) return null;
       const raw = window.localStorage.getItem(PROFILE_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch {
@@ -104,6 +108,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               /* ignore */
             }
           }
+        }
+      } else {
+        // No token present; ensure any leftover keys are cleaned up
+        setUser(null);
+        setPhone(null);
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+          window.localStorage.removeItem(PROFILE_KEY);
+        } catch {
+          /* ignore */
         }
       }
       setHydrated(true);
@@ -248,7 +262,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       phone,
       user,
-      isAuthenticated: Boolean(phone || user || getAuthToken()),
+      isAuthenticated: Boolean(getAuthToken() && (phone || user)),
       hydrated,
       pendingOtp,
       pendingPhone,

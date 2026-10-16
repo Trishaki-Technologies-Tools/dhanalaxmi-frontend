@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { formatINR } from "@/lib/catalog";
 import { useCatalog } from "@/lib/catalog-store";
-import { orderStages, stageIndexFor, type Order } from "@/lib/orders";
+import { orderStages, stageIndexFor, statusToStageIndex, type Order } from "@/lib/orders";
 import { Panel, StatPill } from "@/components/admin/ui";
 import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
@@ -37,6 +37,8 @@ function AdminDashboard() {
               pincode: o.pincode,
             },
             status: (o.status === "CANCELLED" ? "cancelled" : "active") as Order["status"],
+            rawStatus: o.status,
+            stageOverride: statusToStageIndex(o.status),
             lines: o.items.map((item: any) => ({
               slug: item.productSlug,
               name: item.productName,
@@ -52,7 +54,7 @@ function AdminDashboard() {
 
   const live = allOrders.filter((o) => (o.status ?? "active") === "active");
   const revenue = live.reduce((sum, o) => sum + o.total, 0);
-  const pending = live.filter((o) => stageIndexFor(o, now) < 4).length;
+  const pending = live.filter((o) => stageIndexFor(o) < 3).length;
   const customers = new Set(allOrders.map((o) => o.phone)).size;
   const lowStock = products.filter((p) => p.stock <= 5);
   const recent = [...allOrders].slice(0, 6);

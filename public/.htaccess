@@ -1,3 +1,34 @@
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType text/css .css
+  AddType image/svg+xml .svg
+  AddType application/json .json
+  AddType font/woff2 .woff2
+  AddType font/woff .woff
+</IfModule>
+
+# Force JavaScript Content-Type headers for module scripts on LiteSpeed / Apache
+<FilesMatch "\.(js|mjs)$">
+  <IfModule mod_headers.c>
+    Header set Content-Type "application/javascript; charset=utf-8"
+  </IfModule>
+</FilesMatch>
+
+<FilesMatch "\.css$">
+  <IfModule mod_headers.c>
+    Header set Content-Type "text/css; charset=utf-8"
+  </IfModule>
+</FilesMatch>
+
+# Never cache index.html so browsers never request outdated hashed asset bundles
+<FilesMatch "index\.html$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </IfModule>
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
