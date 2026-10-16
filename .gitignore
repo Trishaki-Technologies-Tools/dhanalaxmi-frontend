@@ -39,6 +39,7 @@ test_upload_pack/
 .env
 .env.*
 !.env.example
+!.env.production
 backend/.env
 backend/.env.*
 !backend/.env.example
